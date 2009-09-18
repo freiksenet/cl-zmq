@@ -18,7 +18,57 @@
 (defpackage #:cl-zmq
   (:nicknames :zmq)
   (:use :cl :cffi)
-  (:export))
+  (:shadow #:sleep #:close)
+  (:export
+   ;; constants
+   #:max-vsm-size
+   #:gap
+   #:delimiter
+   #:vsm
+   #:hwm
+   #:lwm
+   #:swap
+   #:affinity
+   #:identity
+   #:subscribe
+   #:unsubscribe
+   #:rate
+   #:recovery-ivl
+   #:mcast-loop
+   #:noblock
+   #:noflush
+   #:p2p
+   #:pub
+   #:sum
+   #:req
+   #:rep
+
+   ;; structure
+   #:msg
+
+   ;; functions
+   #:msg-init
+   #:msg-init-size
+   #:msg-init-data
+   #:msg-close
+   #:msg-move
+   #:msg-copy
+   #:msg-data
+   #:msg-size
+   #:msg-type
+   #:init
+   #:term
+   #:socket
+   #:close
+   #:setsockopt
+   #:bind
+   #:connect
+   #:send
+   #:flush
+   #:recv
+   #:stopwatch-start
+   #:stopwatch-stop
+   #:sleep))
 
 (in-package :cl-zmq)
 
