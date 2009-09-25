@@ -70,7 +70,10 @@
    #:recv
    #:stopwatch-start
    #:stopwatch-stop
-   #:sleep))
+   #:sleep
+
+   ;; macros
+   #:with-socket))
 
 (in-package :cl-zmq)
 

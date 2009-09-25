@@ -10,15 +10,14 @@
 (defparameter ctx (zmq:init 1 1))
 (defparameter s (zmq:socket ctx zmq:rep))
 
-(zmq:bind s *address*)
+(zmq:with-socket (s ctx zmq:rep)
+  (zmq:bind s *address*)
+  (let ((msg (zmq:make-message)))
+    (dotimes (i *roundtrip-count*)
+      (zmq:recv s msg 0)
+      (zmq:send s msg 0)))
+  (zmq:sleep 1))
 
-(let ((msg (zmq:make-message)))
-  (dotimes (i *roundtrip-count*)
-    (zmq:recv s msg 0)
-    (zmq:send s msg 0)))
-
-(zmq:sleep 1)
-(zmq:close s)
 (zmq:term ctx)
 (sb-ext:quit)
 ;

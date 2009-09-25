@@ -15,4 +15,9 @@
 (defun free-message (msg)
   (msg-close msg)
   (foreign-free msg))
+
+(defmacro with-socket ((socket context type) &body body)
+  `(let ((,socket (socket ,context ,type)))
+     ,@body
+     (close ,socket)))
 ;
