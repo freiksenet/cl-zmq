@@ -73,6 +73,7 @@
    #:sleep
 
    ;; macros
+   #:with-context
    #:with-socket))
 
 (in-package :cl-zmq)

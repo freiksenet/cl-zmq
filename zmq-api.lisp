@@ -16,6 +16,11 @@
   (msg-close msg)
   (foreign-free msg))
 
+(defmacro with-context ((context app-threads io-threads) &body body)
+  `(let ((,context (init ,app-threads ,io-threads)))
+     ,@body
+     (term ,context)))
+
 (defmacro with-socket ((socket context type) &body body)
   `(let ((,socket (socket ,context ,type)))
      ,@body
