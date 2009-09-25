@@ -10,8 +10,7 @@
 (defparameter ctx (zmq:init 1 1))
 (defparameter s (zmq:socket ctx zmq:rep))
 
-(with-foreign-string (addr *address*)
-  (zmq:bind s addr))
+(zmq:bind s *address*)
 
 (with-foreign-object (msg 'zmq:msg)
   (zmq:msg-init msg)

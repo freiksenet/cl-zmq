@@ -32,4 +32,5 @@
   :serial t
   :components ((:file "package")
 	       (cffi-grovel:grovel-file "grovel" :depends-on ("package"))
-               (:file "zmq" :depends-on ("grovel"))))
+               (:file "zmq" :depends-on ("grovel"))
+               (:file "zmq-api" :depends-on ("zmq"))))
