@@ -16,7 +16,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (cl:eval-when (:load-toplevel :execute)
-  (asdf:operate 'asdf:load-op :cffi-grovel))
+  (asdf:operate 'asdf:load-op :cffi-grovel)
+  (asdf:operate 'asdf:load-op :trivial-garbage))
 
 (defpackage #:cl-zmq-asd
   (:use :cl :asdf))

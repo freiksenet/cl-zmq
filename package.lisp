@@ -47,6 +47,8 @@
    #:msg
 
    ;; functions
+   #:make-message
+   #:free-message
    #:msg-init
    #:msg-init-size
    #:msg-init-data

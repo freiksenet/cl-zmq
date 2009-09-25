@@ -12,12 +12,10 @@
 
 (zmq:bind s *address*)
 
-(with-foreign-object (msg 'zmq:msg)
-  (zmq:msg-init msg)
+(let ((msg (zmq:make-message)))
   (dotimes (i *roundtrip-count*)
     (zmq:recv s msg 0)
-    (zmq:send s msg 0))
-  (zmq:msg-close msg))
+    (zmq:send s msg 0)))
 
 (zmq:sleep 1)
 (zmq:close s)
