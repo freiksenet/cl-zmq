@@ -53,7 +53,7 @@ message is deallocated."
   (dest	msg)
   (src	msg))
 
-(defcfun ("zmq_msg_data" msg-data) :int
+(defcfun ("zmq_msg_data" msg-data) :pointer
   "Returns pointer to message data."
   (msg	msg))
 
