@@ -29,4 +29,12 @@
   `(let ((,socket (socket ,context ,type)))
      ,@body
      (close ,socket)))
+
+(defmacro with-stopwatch (&body body)
+  (let ((watch (gensym)))
+    `(with-foreign-object (,watch :long 2)
+       (setq ,watch (zmq:stopwatch-start))
+       ,@body
+       (zmq:stopwatch-stop ,watch))))
+
 ;

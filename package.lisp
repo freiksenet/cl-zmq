@@ -74,7 +74,8 @@
 
    ;; macros
    #:with-context
-   #:with-socket))
+   #:with-socket
+   #:with-stopwatch))
 
 (in-package :cl-zmq)
 
