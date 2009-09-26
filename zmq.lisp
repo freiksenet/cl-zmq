@@ -106,7 +106,7 @@ EINVAL - unknown option, a value with incorrect length or an invalid value."
   (s	:pointer)
   (addr	:pointer :char))
 
-(defcfun ("zmq_connect" connect) :int
+(defcfun ("zmq_connect" %connect) :int
   "Connect the socket to a particular address."
   (s	:pointer)
   (addr	:pointer :char))

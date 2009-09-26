@@ -4,6 +4,10 @@
   (with-foreign-string (addr address)
     (%bind s addr)))
 
+(defun connect (s address)
+  (with-foreign-string (addr address)
+    (%connect s addr)))
+
 (defun make-message (&optional (size nil size-p))
   (let ((msg (foreign-alloc 'zmq:msg)))
     (msg-init msg)
