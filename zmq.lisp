@@ -9,21 +9,29 @@
 	 (name (list c-name n-name))
 
 	 (docstring (when (stringp (car args)) (pop args)))
-	 (args-names (loop for i in args collect (car i)))
 	 (ret (gensym)))
+    (loop with opt
+       for i in args
+       unless (consp i) do (setq opt t)
+       else
+       collect i into args*
+       and if (not opt) collect (car i) into names
+       else collect (car i) into opts
+       and collect (list (car i) 0) into opts-init
+       end
+       finally (return
+	 `(progn
+	    (defcfun ,name ,return-type
+	      ,@args*)
 
-    `(progn
-       (defcfun ,name ,return-type
-	 ,@args)
-
-       (defun ,l-name (,@args-names)
-	 ,docstring
-	 (let ((,ret (,n-name ,@args-names)))
-	   (when ,(if (eq return-type :pointer)
-		    `(zerop (pointer-address ,ret))
-		    `(not (zerop ,ret)))
-	       (error (convert-from-foreign (%strerror *errno*) :string)))
-	   ,ret)))))
+	    (defun ,l-name (,@names &optional ,@opts-init)
+	      ,docstring
+	      (let ((,ret (,n-name ,@names ,@opts)))
+		(when ,(if (eq return-type :pointer)
+			   `(zerop (pointer-address ,ret))
+			   `(not (zerop ,ret)))
+		  (error (convert-from-foreign (%strerror *errno*) :string)))
+		,ret)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ errors.
@@ -347,7 +355,7 @@ the effect is measurable only in extremely high-perf scenarios
 (million messages a second or so). If that's not your case, use standard
 flushing send instead.")
 
-(defcfun ("zmq_send" %send) :int
+(defcfun* ("zmq_send" send) :int
   "Send the message 'msg' to the socket 's'. 'flags' argument can be
 combination the flags described above.
 
@@ -357,6 +365,7 @@ Errors: EAGAIN - message cannot be sent at the moment (applies only to
         EFSM - function cannot be called at the moment."
   (s		:pointer)
   (msg		msg)
+  :optional
   (flags	:int))
 
 (defcfun* ("zmq_flush" flush) :int
@@ -366,7 +375,7 @@ Errors: ENOTSUP - function isn't supported by particular socket type.
         EFSM - function cannot be called at the moment."
   (s	:pointer))
 
-(defcfun ("zmq_recv" %recv) :int
+(defcfun* ("zmq_recv" recv) :int
   "Receive a message from the socket 's'. 'flags' argument can be combination
 of the flags described above with the exception of ZMQ_NOFLUSH.
 
@@ -376,6 +385,7 @@ Errors: EAGAIN - message cannot be received at the moment (applies only to
         EFSM - function cannot be called at the moment."
   (s		:pointer)
   (msg		msg)
+  :optional
   (flags	:int))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

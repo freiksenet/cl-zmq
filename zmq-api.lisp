@@ -8,10 +8,6 @@
   (with-foreign-string (addr address)
     (%connect s addr)))
 
-(defun msg-init-size (msg size)
-  (unless (zerop (%msg-init-size msg size))
-    (error (%strerror *errno*))))
-
 (defun make-message (&optional (size nil size-p))
   (let ((msg (foreign-alloc 'zmq:msg)))
     (tg:finalize msg #'(lambda (msg) (free-message msg)))
@@ -40,13 +36,5 @@
        (setq ,watch (stopwatch-start))
        ,@body
        (stopwatch-stop ,watch))))
-
-(defun send (s msg &optional flags)
-  (unless (zerop (%send s msg (or flags 0)))
-    (error (%strerror *errno*))))
-
-(defun recv (s msg &optional flags)
-  (unless (zerop (%recv s msg (or flags 0)))
-    (error (%strerror *errno*))))
 
 ;
