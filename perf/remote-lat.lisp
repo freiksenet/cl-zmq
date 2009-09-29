@@ -17,8 +17,8 @@
       (setf *elapsed*
 	    (zmq:with-stopwatch
 		(dotimes (i *roundtrip-count*)
-		  (zmq:send s msg 0)
-		  (zmq:recv s msg 0)))))))
+		  (zmq:send s msg)
+		  (zmq:recv s msg)))))))
 
 (setf *latency* (/ *elapsed* (* 2 *roundtrip-count*)))
 

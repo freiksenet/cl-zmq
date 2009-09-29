@@ -1,5 +1,30 @@
 (in-package :cl-zmq)
 
+(defcvar "errno" :int)
+
+(defmacro defcfun* (name-and-options return-type &body args)
+  (let* ((c-name (car name-and-options))
+	 (l-name (cadr name-and-options))
+	 (n-name (cffi::format-symbol t "%~A" l-name))
+	 (name (list c-name n-name))
+
+	 (docstring (when (stringp (car args)) (pop args)))
+	 (args-names (loop for i in args collect (car i)))
+	 (ret (gensym)))
+
+    `(progn
+       (defcfun ,name ,return-type
+	 ,@args)
+
+       (defun ,l-name (,@args-names)
+	 ,docstring
+	 (let ((,ret (,n-name ,@args-names)))
+	   (when ,(if (eq return-type :pointer)
+		    `(zerop (pointer-address ,ret))
+		    `(not (zerop ,ret)))
+	       (error (convert-from-foreign (%strerror *errno*) :string)))
+	   ,ret)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ errors.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,7 +46,7 @@ different OSes. The assumption is that error_t is at least 32-bit type.")
 (defconstant efsm (+ hausnumero 51))
 (defconstant enocompatproto (+ hausnumero 52))
 
-(defcfun ("zmq_strerror" strerror) :pointer
+(defcfun ("zmq_strerror" %strerror) :pointer
   "Resolves system errors and 0MQ errors to human-readable string."
   (errnum	:int))
 
@@ -54,7 +79,7 @@ not declared in the api."
   "Initialise an empty message (zero bytes long)."
   (msg	msg))
 
-(defcfun ("zmq_msg_init_size" msg-init-size) :int
+(defcfun* ("zmq_msg_init_size" msg-init-size) :int
   "Initialise a message 'size' bytes long.
 
 Errors: ENOMEM - the size is too large to allocate."
@@ -112,7 +137,7 @@ message is deallocated."
   "Flag specifying that the sockets within this context should be pollable.
 This may be a little less efficient that raw non-pollable sockets.")
 
-(defcfun ("zmq_init" init) :pointer
+(defcfun* ("zmq_init" init) :pointer
   "Initialise 0MQ context. 'app_threads' specifies maximal number
 of application threads that can own open sockets at the same time.
 'io_threads' specifies the size of thread pool to handle I/O operations.
@@ -159,7 +184,7 @@ only an alternated sequence of send's and recv's")
 only an alternated sequence of recv's and send's. Each send is routed to
 the peer that issued the last received request.")
 
-(defcfun ("zmq_socket" socket) :pointer
+(defcfun* ("zmq_socket" socket) :pointer
   "Open a socket.
 
 Errors: EINVAL - invalid socket type.
@@ -261,7 +286,7 @@ can have negative impact on the performance. if possible, disable
 the loopback in production environments.
 Type: uint64_t Unit: N/A (boolean value) Default: 1")
 
-(defcfun ("zmq_setsockopt" setsockopt) :int
+(defcfun* ("zmq_setsockopt" setsockopt) :int
   "Sets an option on the socket. 'option' argument specifies the option (see
 the option list above). 'optval' is a pointer to the value to set,
 'optvallen' is the size of the value in bytes.
@@ -322,7 +347,7 @@ the effect is measurable only in extremely high-perf scenarios
 (million messages a second or so). If that's not your case, use standard
 flushing send instead.")
 
-(defcfun ("zmq_send" send) :int
+(defcfun ("zmq_send" %send) :int
   "Send the message 'msg' to the socket 's'. 'flags' argument can be
 combination the flags described above.
 
@@ -334,14 +359,14 @@ Errors: EAGAIN - message cannot be sent at the moment (applies only to
   (msg		msg)
   (flags	:int))
 
-(defcfun ("zmq_flush" flush) :int
+(defcfun* ("zmq_flush" flush) :int
   "Flush the messages that were send using ZMQ_NOFLUSH flag down the stream.
 
 Errors: ENOTSUP - function isn't supported by particular socket type.
         EFSM - function cannot be called at the moment."
   (s	:pointer))
 
-(defcfun ("zmq_recv" recv) :int
+(defcfun ("zmq_recv" %recv) :int
   "Receive a message from the socket 's'. 'flags' argument can be combination
 of the flags described above with the exception of ZMQ_NOFLUSH.
 

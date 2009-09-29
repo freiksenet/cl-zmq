@@ -12,8 +12,8 @@
     (zmq:bind s *address*)
     (let ((msg (zmq:make-message)))
       (dotimes (i *roundtrip-count*)
-	(zmq:recv s msg 0)
-	(zmq:send s msg 0)))
+	(zmq:recv s msg)
+	(zmq:send s msg)))
     (zmq:sleep 1)))
 
 (sb-ext:quit)
