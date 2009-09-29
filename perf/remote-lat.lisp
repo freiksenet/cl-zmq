@@ -11,7 +11,7 @@
 (defvar *latency* nil)
 
 (zmq::with-context (ctx 1 1)
-  (zmq:with-socket (s ctx zmq:rep)
+  (zmq:with-socket (s ctx zmq:req)
     (zmq:connect s *address*)
     (let ((msg (zmq:make-message *message-size*)))
       (setf *elapsed*

@@ -21,10 +21,19 @@
   (:shadow #:sleep #:close)
   (:export
    ;; constants
+   #:hausnumero
+   #:emthread
+   #:efsm
+   #:enocompatproto
    #:max-vsm-size
-   #:gap
    #:delimiter
    #:vsm
+   #:poll
+   #:p2p
+   #:pub
+   #:sub
+   #:req
+   #:rep
    #:hwm
    #:lwm
    #:swap
@@ -37,11 +46,6 @@
    #:mcast-loop
    #:noblock
    #:noflush
-   #:p2p
-   #:pub
-   #:sum
-   #:req
-   #:rep
 
    ;; structure
    #:msg
@@ -49,6 +53,7 @@
    ;; functions
    #:make-message
    #:free-message
+   #:strerror
    #:msg-init
    #:msg-init-size
    #:msg-init-data

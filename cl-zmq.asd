@@ -29,9 +29,8 @@
   :version "0.1"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
   :licence "GPLv3"
-  :description "Zero MQ bindings"
+  :description "Zero MQ 2 bindings"
   :serial t
   :components ((:file "package")
-	       (cffi-grovel:grovel-file "grovel" :depends-on ("package"))
-               (:file "zmq" :depends-on ("grovel"))
-               (:file "zmq-api" :depends-on ("zmq"))))
+               (:file "zmq")
+               (:file "zmq-api")))

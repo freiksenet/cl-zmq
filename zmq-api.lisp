@@ -20,8 +20,8 @@
   (msg-close msg)
   (foreign-free msg))
 
-(defmacro with-context ((context app-threads io-threads) &body body)
-  `(let ((,context (init ,app-threads ,io-threads)))
+(defmacro with-context ((context app-threads io-threads &optional flags) &body body)
+  `(let ((,context (init ,app-threads ,io-threads (or ,flags 0))))
      ,@body
      (term ,context)))
 
