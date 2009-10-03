@@ -13,8 +13,10 @@
     (let ((msg (zmq:make-message)))
       (dotimes (i *roundtrip-count*)
 	(zmq:recv s msg)
+	(format t "size ~d, ~a~%" (zmq:msg-size msg) (zmq:msg-data-as-array msg))
 	(zmq:send s msg)))
     (zmq:sleep 1)))
-
+(tg:gc)
 (sb-ext:quit)
+
 ;

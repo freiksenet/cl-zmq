@@ -17,7 +17,7 @@
 
 (defpackage #:cl-zmq
   (:nicknames :zmq)
-  (:use :cl :cffi)
+  (:use :cl :cffi :closer-mop)
   (:shadow #:sleep #:close)
   (:export
    ;; constants
@@ -61,7 +61,8 @@
    #:msg-close
    #:msg-move
    #:msg-copy
-   #:msg-data
+   #:msg-data-as-string
+   #:msg-data-as-array
    #:msg-size
    #:msg-type
    #:init

@@ -2,37 +2,6 @@
 
 (defcvar "errno" :int)
 
-(defmacro defcfun* (name-and-options return-type &body args)
-  (let* ((c-name (car name-and-options))
-	 (l-name (cadr name-and-options))
-	 (n-name (cffi::format-symbol t "%~A" l-name))
-	 (name (list c-name n-name))
-
-	 (docstring (when (stringp (car args)) (pop args)))
-	 (ret (gensym)))
-    (loop with opt
-       for i in args
-       unless (consp i) do (setq opt t)
-       else
-       collect i into args*
-       and if (not opt) collect (car i) into names
-       else collect (car i) into opts
-       and collect (list (car i) 0) into opts-init
-       end
-       finally (return
-	 `(progn
-	    (defcfun ,name ,return-type
-	      ,@args*)
-
-	    (defun ,l-name (,@names &optional ,@opts-init)
-	      ,docstring
-	      (let ((,ret (,n-name ,@names ,@opts)))
-		(when ,(if (eq return-type :pointer)
-			   `(zerop (pointer-address ,ret))
-			   `(not (zerop ,ret)))
-		  (error (convert-from-foreign (%strerror *errno*) :string)))
-		,ret)))))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ errors.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -85,7 +54,7 @@ field in zmq_msg_t structure should be modified accordingly.")
 (defconstant delimiter 31)
 (defconstant vsm 32)
 
-(defcstruct msg
+(def-c-struct (msg)
     "A message. if 'shared' is true, message content pointed to by 'content'
 is shared, i.e. reference counting is used to manage its lifetime
 rather than straighforward malloc/free. struct zmq_msg_content is
@@ -106,6 +75,10 @@ Errors: ENOMEM - the size is too large to allocate."
   (msg	msg)
   (size	:long))
 
+(defcallback zmq-free :void ((ptr :pointer))
+  (format t "zmq-free ~A~%" ptr)
+  (foreign-free ptr))
+
 ;;typedef void (zmq_free_fn) (void *data);
 (defcfun ("zmq_msg_init_data" msg-init-data) :int
   "Initialise a message from an existing buffer. Message isn't copied,
@@ -122,14 +95,14 @@ so that it complies with standard C 'free' function."
   "Deallocate the message."
   (msg	msg))
 
-(defcfun ("zmq_msg_move" msg-move) :int
+(defcfun ("zmq_msg_move" %msg-move) :int
   "Move the content of the message from 'src' to 'dest'. The content isn't
 copied, just moved. 'src' is an empty message after the call. Original
 content of 'dest' message is deallocated."
   (dest	msg)
   (src	msg))
 
-(defcfun ("zmq_msg_copy" msg-copy) :int
+(defcfun ("zmq_msg_copy" %msg-copy) :int
   "Copy the 'src' message to 'dest'. The content isn't copied, instead
 reference count is increased. Don't modify the message data after the
 call as they are shared between two messages. Original content of 'dest'
@@ -137,16 +110,12 @@ message is deallocated."
   (dest	msg)
   (src	msg))
 
-(defcfun ("zmq_msg_data" msg-data) :pointer
+(defcfun ("zmq_msg_data" %msg-data) :pointer
   "Returns pointer to message data."
   (msg	msg))
 
-(defcfun ("zmq_msg_size" msg-size) :int
+(defcfun ("zmq_msg_size" %msg-size) :int
   "Return size of message data (in bytes)."
-  (msg	msg))
-
-(defcfun ("zmq_msg_type" msg-type) :long
-  "Returns type of the message."
   (msg	msg))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -334,7 +303,7 @@ Errors: EINVAL - unknown option, a value with incorrect length
 ;;              port. Examples: "pgm://eth2;224.0.0.1:8000",
 ;;              "udp://192.168.0.111;224.1.1.1:5555".
 
-(defcfun ("zmq_bind" %bind) :int
+(defcfun* ("zmq_bind" %bind) :int
   "Bind the socket to a particular address.
 
 Errors: EPROTONOSUPPORT - unsupported protocol.
@@ -342,7 +311,7 @@ Errors: EPROTONOSUPPORT - unsupported protocol.
   (s	:pointer)
   (addr	:pointer :char))
 
-(defcfun ("zmq_connect" %connect) :int
+(defcfun* ("zmq_connect" %connect) :int
   "Connect the socket to a particular address.
 
 Errors: EPROTONOSUPPORT - unsupported protocol.
@@ -367,7 +336,7 @@ the effect is measurable only in extremely high-perf scenarios
 (million messages a second or so). If that's not your case, use standard
 flushing send instead.")
 
-(defcfun* ("zmq_send" send) :int
+(defcfun* ("zmq_send" %send) :int
   "Send the message 'msg' to the socket 's'. 'flags' argument can be
 combination the flags described above.
 
@@ -387,7 +356,7 @@ Errors: ENOTSUP - function isn't supported by particular socket type.
         EFSM - function cannot be called at the moment."
   (s	:pointer))
 
-(defcfun* ("zmq_recv" recv) :int
+(defcfun* ("zmq_recv" %recv) :int
   "Receive a message from the socket 's'. 'flags' argument can be combination
 of the flags described above with the exception of ZMQ_NOFLUSH.
 
@@ -407,7 +376,7 @@ Errors: EAGAIN - message cannot be received at the moment (applies only to
 (defconstant pollin 1)
 (defconstant pollout 2)
 
-(defcstruct pollitem
+(def-c-struct pollitem
     "'socket' is a 0MQ socket we want to poll on. If set to NULL, native file
 descriptor (socket) 'fd' will be used instead. 'events' defines event we
 are going to poll on - combination of ZMQ_POLLIN and ZMQ_POLLOUT. Error
