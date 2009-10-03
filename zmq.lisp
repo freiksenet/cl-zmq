@@ -48,6 +48,18 @@ different OSes. The assumption is that error_t is at least 32-bit type.")
 ;; #ifndef EPROTONOSUPPORT
 ;; #define EPROTONOSUPPORT (ZMQ_HAUSNUMERO + 2)
 ;; #endif
+;; #ifndef ENOBUFS
+;; #define ENOBUFS (ZMQ_HAUSNUMERO + 3)
+;; #endif
+;; #ifndef ENETDOWN
+;; #define ENETDOWN (ZMQ_HAUSNUMERO + 4)
+;; #endif
+;; #ifndef EADDRINUSE
+;; #define EADDRINUSE (ZMQ_HAUSNUMERO + 5)
+;; #endif
+;; #ifndef EADDRNOTAVAIL
+;; #define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
+;; #endif
 
 ;;  Native 0MQ error codes.
 (defconstant emthread (+ hausnumero 50))
@@ -387,6 +399,39 @@ Errors: EAGAIN - message cannot be received at the moment (applies only to
   (msg		msg)
   :optional
   (flags	:int))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  I/O multiplexing.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defconstant pollin 1)
+(defconstant pollout 2)
+
+(defcstruct pollitem
+    "'socket' is a 0MQ socket we want to poll on. If set to NULL, native file
+descriptor (socket) 'fd' will be used instead. 'events' defines event we
+are going to poll on - combination of ZMQ_POLLIN and ZMQ_POLLOUT. Error
+event does not exist for portability reasons. Errors from native sockets
+are reported as ZMQ_POLLIN. It's client's responsibilty to identify the
+error afterwards. 'revents' field is filled in after function returns. It's
+a combination of ZMQ_POLLIN and/or ZMQ_POLLOUT depending on the state of the
+socket."
+  (socket	:pointer)
+  (fd		:int)
+  (events	:short)
+  (revents	:short))
+
+(defcfun* ("zmq_poll" poll) :int
+  "Polls for the items specified by 'items'. Number of items in the array is
+determined by 'nitems' argument. Returns number of items signaled, -1
+in the case of error.
+
+Errors: EFAULT - there's a 0MQ socket in the pollset belonging to
+                 a different thread.
+        ENOTSUP - 0MQ context was initialised without ZMQ_POLL flag.
+                  I/O multiplexing is disabled."
+  (items	pollitem)
+  (nitems	:int))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper functions.

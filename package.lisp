@@ -47,8 +47,9 @@
    #:noblock
    #:noflush
 
-   ;; structure
+   ;; structures
    #:msg
+   #:pollitem
 
    ;; functions
    #:make-message
@@ -76,6 +77,7 @@
    #:stopwatch-start
    #:stopwatch-stop
    #:sleep
+   #:poll
 
    ;; macros
    #:with-context
