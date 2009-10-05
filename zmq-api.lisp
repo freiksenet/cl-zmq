@@ -72,4 +72,11 @@
 (defun msg-copy (dst src)
   (%msg-copy (msg-raw dst) (msg-raw src)))
 
+(defun setsockopt (socket option value)
+  (etypecase value
+    (string (with-foreign-string (string value)
+	      (%setsockopt socket option string (length value))))
+    (integer (with-foreign-object (int :long 2)
+	       (setf (mem-aref int :long 0) value)
+	       (%setsockopt socket option int (foreign-type-size :long))))))
 ;

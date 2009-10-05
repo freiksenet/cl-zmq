@@ -275,7 +275,7 @@ can have negative impact on the performance. if possible, disable
 the loopback in production environments.
 Type: uint64_t Unit: N/A (boolean value) Default: 1")
 
-(defcfun* ("zmq_setsockopt" setsockopt) :int
+(defcfun* ("zmq_setsockopt" %setsockopt) :int
   "Sets an option on the socket. 'option' argument specifies the option (see
 the option list above). 'optval' is a pointer to the value to set,
 'optvallen' is the size of the value in bytes.
