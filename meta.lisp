@@ -73,6 +73,14 @@
        ,@args)
      (define-wrapper ,name ())))
 
+(define-condition error-again (error)
+  ((argument :reader error-again :initarg :argument))
+  (:report (lambda (condition stream)
+	     (write-string (convert-from-foreign
+			    (%strerror (error-again condition))
+			    :string)
+			   stream))))
+
 (defmacro defcfun* (name-and-options return-type &body args)
   (let* ((c-name (car name-and-options))
 	 (l-name (cadr name-and-options))
@@ -98,8 +106,10 @@
 	    (defun ,l-name (,@names &optional ,@opts-init)
 	      ,docstring
 	      (let ((,ret (,n-name ,@names ,@opts)))
-		(when ,(if (eq return-type :pointer)
+		(if ,(if (eq return-type :pointer)
 			   `(zerop (pointer-address ,ret))
 			   `(not (zerop ,ret)))
-		  (error (convert-from-foreign (%strerror *errno*) :string)))
-		,ret)))))))
+		    (cond
+		      ((eq *errno* isys:eagain) (error 'error-again :argument *errno*))
+		      (t (error (convert-from-foreign (%strerror *errno*) :string))))
+		,ret))))))))

@@ -83,7 +83,10 @@
    ;; macros
    #:with-context
    #:with-socket
-   #:with-stopwatch))
+   #:with-stopwatch
+
+   ;; conditions
+   #:error-again))
 
 (in-package :cl-zmq)
 
