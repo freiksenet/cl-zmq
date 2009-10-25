@@ -8,7 +8,7 @@
   (with-foreign-string (addr address)
     (%connect s addr)))
 
-(defun make-message (&optional (data nil data-p) &key (size nil size-p))
+(defun make-message (&optional (data nil data-p) (size nil size-p))
   (let* ((msg (make-instance 'msg :finalizer #'msg-close))
 	 (raw (msg-raw msg)))
     (when size-p
