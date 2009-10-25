@@ -8,6 +8,24 @@
   (with-foreign-string (addr address)
     (%connect s addr)))
 
+;; Do I really need all this horrible meta stuff just for 2 cstructs?..
+(defmethod initialize-instance :after ((inst msg) &key size data)
+  (with-slots (raw) inst
+    (tg:finalize inst (lambda () (msg-close raw)))
+    (when size
+      (msg-init-size raw size))
+    (when data
+      (multiple-value-bind (ptr len)
+	  (etypecase data
+	    (string (let ((ptr (convert-to-foreign data :string)))
+		      (values ptr (1+ (foreign-funcall "strlen" :pointer ptr :long)))))
+	    (array (let* ((len (length data))
+			  (ptr (foreign-alloc :uchar :count len)))
+		     (dotimes (i len)
+		       (setf (mem-aref ptr :uchar i) (aref data i)))
+		     (values ptr len))))
+	(msg-init-data raw ptr len (callback zmq-free))))))
+#|
 (defun make-message (&optional (data nil data-p) (size nil size-p))
   (let* ((msg (make-instance 'msg :finalizer #'msg-close))
 	 (raw (msg-raw msg)))
@@ -25,7 +43,7 @@
 		     (values ptr len))))
 	(msg-init-data raw ptr len (callback zmq-free))))
     msg))
-
+|#
 (defmacro with-context ((context app-threads io-threads &optional flags) &body body)
   `(let ((,context (init ,app-threads ,io-threads (or ,flags 0))))
      ,@body

@@ -13,7 +13,7 @@
 (zmq::with-context (ctx 1 1)
   (zmq:with-socket (s ctx zmq:req)
     (zmq:connect s *address*)
-    (let ((msg (zmq:make-message #(1 2 3))))
+    (let ((msg (make-instance 'zmq:msg :data #(1 2 3))))
       (setf *elapsed*
 	    (zmq:with-stopwatch
 		(dotimes (i *roundtrip-count*)

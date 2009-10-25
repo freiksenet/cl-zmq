@@ -56,7 +56,6 @@
    #:pollitem
 
    ;; functions
-   #:make-message
    #:strerror
    #:msg-init
    #:msg-init-size

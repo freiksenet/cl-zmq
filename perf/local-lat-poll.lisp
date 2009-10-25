@@ -10,7 +10,7 @@
 (zmq:with-context (ctx 1 1 zmq:poll)
   (zmq:with-socket (s ctx zmq:rep)
     (zmq:bind s *address*)
-    (let ((msg (zmq:make-message)))
+    (let ((msg (make-instance 'zmq:msg)))
       (zmq:with-poll (poll-in ((s . zmq:pollin)))
 	(zmq:with-poll (poll-out ((s . zmq:pollout)))
 	  (dotimes (i *roundtrip-count*)

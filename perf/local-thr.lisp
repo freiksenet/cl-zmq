@@ -15,8 +15,8 @@
   (zmq:with-socket (s ctx zmq:sub)
     (zmq:setsockopt s zmq:subscribe "*")
     (zmq:setsockopt s zmq:rate *rate*)
-    (zmq:bind s *address*)
-    (let ((msg (zmq:make-message)))
+    (zmq:bind s *bind-address*)
+    (let ((msg (make-instance 'zmq:msg)))
       (zmq:recv s msg)
       (setf *elapsed*
 	    (zmq:with-stopwatch
