@@ -29,6 +29,8 @@
    #:delimiter
    #:vsm
    #:poll
+   #:pollin
+   #:pollout
    #:p2p
    #:pub
    #:sub
@@ -47,13 +49,14 @@
    #:noblock
    #:noflush
 
+   #:events
+
    ;; structures
    #:msg
    #:pollitem
 
    ;; functions
    #:make-message
-   #:free-message
    #:strerror
    #:msg-init
    #:msg-init-size
@@ -79,11 +82,16 @@
    #:stopwatch-stop
    #:sleep
    #:poll
+   #:pollitem-socket
+   #:pollitem-fd
+   #:pollitem-events
+   #:pollitem-revents
 
    ;; macros
    #:with-context
    #:with-socket
    #:with-stopwatch
+   #:with-poll
 
    ;; conditions
    #:error-again))

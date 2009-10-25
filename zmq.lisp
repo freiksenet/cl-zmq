@@ -390,7 +390,7 @@ socket."
   (events	:short)
   (revents	:short))
 
-(defcfun* ("zmq_poll" poll) :int
+(defcfun ("zmq_poll" %poll) :int
   "Polls for the items specified by 'items'. Number of items in the array is
 determined by 'nitems' argument. Returns number of items signaled, -1
 in the case of error.
@@ -399,7 +399,7 @@ Errors: EFAULT - there's a 0MQ socket in the pollset belonging to
                  a different thread.
         ENOTSUP - 0MQ context was initialised without ZMQ_POLL flag.
                   I/O multiplexing is disabled."
-  (items	pollitem)
+  (items	:pointer)
   (nitems	:int))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -79,4 +79,32 @@
     (integer (with-foreign-object (int :long 2)
 	       (setf (mem-aref int :long 0) value)
 	       (%setsockopt socket option int (foreign-type-size :long))))))
+
+(defun poll (items)
+  (let ((len (length items)))
+    (with-foreign-object (%items 'pollitem len)
+      (dotimes (i len)
+	(let ((item (nth i items))
+	      (%item (mem-aref %items 'pollitem i)))
+	  (with-foreign-slots ((socket fd events revents) %item pollitem)
+	    (setf socket (pollitem-socket item)
+		  fd (pollitem-fd item)
+		  events (pollitem-events item)))))
+      (let ((ret (%poll %items len)))
+	(if (> ret 0)
+	    (loop for i below len
+	       for revent = (foreign-slot-value (mem-aref %items 'pollitem i)
+						'pollitem
+						'revents)
+	       collect (setf (pollitem-revents (nth i items)) revent))
+	    (error (convert-from-foreign (%strerror *errno*) :string)))))))
+
+(defmacro with-poll ((name polls) &body body)
+  `(let ((,name (list
+		 ,@(loop for (socket . events) in polls
+		      collect `(make-instance 'pollitem
+					      :socket ,socket
+					      :events ,events )))))
+     ,@body))
+
 ;
