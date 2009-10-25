@@ -29,7 +29,7 @@
       `(progn
 	 (defclass ,class-name ,supers
 	   (,@(loop for slot in slots collect
-		   `(,slot))
+		   `(,slot :initarg ,(intern (string-upcase slot) "KEYWORD")))
 	    (raw :accessor ,raw-accessor))
 	   (:metaclass zmq))
 
@@ -57,7 +57,7 @@
 		`(setf (gethash (cons ',class-name ',slot) *zmq-slot-writers*)
 		       (fdefinition '(setf ,slot-name))))
 
-         (defmethod initialize-instance :after ((inst ,class-name) &key pointer finalizer)
+         (defmethod initialize-instance :before ((inst ,class-name) &key pointer finalizer)
 	   (let ((obj (or pointer (foreign-alloc ',class-name))))
 	     (setf (,raw-accessor inst) obj)
 	     (when finalizer
