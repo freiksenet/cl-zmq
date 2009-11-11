@@ -130,13 +130,15 @@ in the case of error."
 	       collect (setf (pollitem-revents (nth i items)) revent))
 	    (error (convert-from-foreign (%strerror *errno*) :string)))))))
 
-(defmacro with-poll ((name polls) &body body)
-  "Automatically creates pollitems."
-  `(let ((,name (list
-		 ,@(loop for (socket . events) in polls
-		      collect `(make-instance 'pollitem
-					      :socket ,socket
-					      :events ,events )))))
+(defmacro with-polls (list &body body)
+  "Automatically creates lists of pollitems."
+  `(let ,(loop for (name . polls) in list
+	    collect `(,name
+		      (list
+		       ,@(loop for (socket . events) in polls
+			    collect `(make-instance 'pollitem
+						    :socket ,socket
+						    :events ,events )))))
      ,@body))
 
 ;

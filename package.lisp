@@ -90,7 +90,7 @@
    #:with-context
    #:with-socket
    #:with-stopwatch
-   #:with-poll
+   #:with-polls
 
    ;; conditions
    #:error-again))
