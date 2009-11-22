@@ -17,7 +17,7 @@
 
 (defpackage #:cl-zmq
   (:nicknames :zmq)
-  (:use :cl :cffi :closer-mop)
+  (:use :cl :cffi)
   (:shadow #:sleep #:close)
   (:export
    ;; constants

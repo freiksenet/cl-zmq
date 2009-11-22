@@ -1,4 +1,4 @@
-(require :cl-zmq)
+(asdf:oos 'asdf:load-op :cl-zmq)
 
 (defpackage :zmq-test
   (:use :cl :cffi))
@@ -25,6 +25,8 @@
 (format t "message size: ~d [B]~%" *message-size*)
 (format t "roundtrip count: ~d~%" *roundtrip-count*)
 (format t "average latency: ~f [us]~%" *latency*)
+
 (tg:gc)
-(sb-ext:quit)
+#+sbcl (sb-ext:quit)
+#+clisp (ext:quit)
 ;

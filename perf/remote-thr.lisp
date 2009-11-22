@@ -1,4 +1,4 @@
-(require :cl-zmq)
+(asdf:oos 'asdf:load-op :cl-zmq)
 
 (defpackage :zmq-test
   (:use :cl :cffi))
@@ -14,6 +14,8 @@
     (let ((msg (make-instance 'zmq:msg :data #(1 2 3))))
       (dotimes (i *message-count*)
 	(zmq:send s msg)))))
+
 (tg:gc)
-(sb-ext:quit)
+#+sbcl (sb-ext:quit)
+#+clisp (ext:quit)
 ;

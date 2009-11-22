@@ -54,7 +54,7 @@ field in zmq_msg_t structure should be modified accordingly.")
 (defconstant delimiter 31)
 (defconstant vsm 32)
 
-(def-c-struct (msg)
+(defcstruct (msg)
     "A message. if 'shared' is true, message content pointed to by 'content'
 is shared, i.e. reference counting is used to manage its lifetime
 rather than straighforward malloc/free. struct zmq_msg_content is
@@ -376,7 +376,7 @@ Errors: EAGAIN - message cannot be received at the moment (applies only to
 (defconstant pollin 1)
 (defconstant pollout 2)
 
-(def-c-struct pollitem
+(defcstruct pollitem
     "'socket' is a 0MQ socket we want to poll on. If set to NULL, native file
 descriptor (socket) 'fd' will be used instead. 'events' defines event we
 are going to poll on - combination of ZMQ_POLLIN and ZMQ_POLLOUT. Error

@@ -18,7 +18,6 @@
 (cl:eval-when (:load-toplevel :execute)
   (asdf:operate 'asdf:load-op :cffi-grovel)
   (asdf:operate 'asdf:load-op :trivial-garbage)
-  (asdf:operate 'asdf:load-op :closer-mop)
   (asdf:operate 'asdf:load-op :iolib.syscalls))
 
 (defpackage #:cl-zmq-asd
@@ -34,6 +33,6 @@
   :description "Zero MQ 2 bindings"
   :serial t
   :components ((:file "package")
-	       (:file "meta")
+               (:file "meta")
                (:file "zmq")
                (:file "zmq-api")))

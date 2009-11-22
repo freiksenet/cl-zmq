@@ -1,4 +1,4 @@
-(require :cl-zmq)
+(asdf:oos 'asdf:load-op :cl-zmq)
 
 (defpackage :zmq-test
   (:use :cl :cffi))
@@ -31,6 +31,7 @@
   (format t "mean throughput: ~,3f [Mb/s]~%" *megabits*))
 
 (tg:gc)
-(sb-ext:quit)
+#+sbcl (sb-ext:quit)
+#+clisp (ext:quit)
 
 ;

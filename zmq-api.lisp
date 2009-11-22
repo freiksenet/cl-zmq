@@ -1,5 +1,82 @@
 (in-package :cl-zmq)
 
+(defclass msg ()
+  ((raw		:accessor msg-raw :initform nil)))
+
+(defmethod initialize-instance :after ((inst msg) &key size data)
+  (let ((obj (foreign-alloc 'msg)))
+    (with-slots (raw shared) inst
+      (setf raw obj)
+      (tg:finalize inst (lambda ()
+			  (msg-close raw)
+			  (foreign-free obj)))
+      (cond (size (msg-init-size raw size))
+	    (data
+	     (multiple-value-bind (ptr len)
+		 (etypecase data
+		   (string (let ((ptr (convert-to-foreign data :string)))
+			     (values ptr (1+ (foreign-funcall "strlen" :pointer ptr :long)))))
+		   (array (let* ((len (length data))
+				 (ptr (foreign-alloc :uchar :count len)))
+			    (dotimes (i len)
+			      (setf (mem-aref ptr :uchar i) (aref data i)))
+			    (values ptr len))))
+	       (msg-init-data raw ptr len (callback zmq-free))))
+	    (t (msg-init raw))))))
+
+(defclass pollitem ()
+  ((raw		:accessor pollitem-raw :initform nil)
+   (socket	:accessor pollitem-socket :initform nil :initarg :socket)
+   (fd		:accessor pollitem-fd :initform -1 :initarg :fd)
+   (events	:accessor pollitem-events :initform 0 :initarg :events)
+   (revents	:accessor pollitem-revents :initform 0)))
+
+(defmethod initialize-instance :after ((inst pollitem) &key)
+  (let ((obj (foreign-alloc 'pollitem)))
+    (setf (pollitem-raw inst) obj)
+    (tg:finalize inst (lambda () (foreign-free obj)))))
+
+(define-condition error-again (error)
+  ((argument :reader error-again :initarg :argument))
+  (:report (lambda (condition stream)
+	     (write-string (convert-from-foreign
+			    (%strerror (error-again condition))
+			    :string)
+			   stream))))
+
+(defmacro defcfun* (name-and-options return-type &body args)
+  (let* ((c-name (car name-and-options))
+	 (l-name (cadr name-and-options))
+	 (n-name (cffi::format-symbol t "%~A" l-name))
+	 (name (list c-name n-name))
+
+	 (docstring (when (stringp (car args)) (pop args)))
+	 (ret (gensym)))
+    (loop with opt
+       for i in args
+       unless (consp i) do (setq opt t)
+       else
+       collect i into args*
+       and if (not opt) collect (car i) into names
+       else collect (car i) into opts
+       and collect (list (car i) 0) into opts-init
+       end
+       finally (return
+	 `(progn
+	    (defcfun ,name ,return-type
+	      ,@args*)
+
+	    (defun ,l-name (,@names &optional ,@opts-init)
+	      ,docstring
+	      (let ((,ret (,n-name ,@names ,@opts)))
+		(if ,(if (eq return-type :pointer)
+			   `(zerop (pointer-address ,ret))
+			   `(not (zerop ,ret)))
+		    (cond
+		      ((eq *errno* isys:eagain) (error 'error-again :argument *errno*))
+		      (t (error (convert-from-foreign (%strerror *errno*) :string))))
+		,ret))))))))
+
 (defun bind (s address)
   "Bind the socket to a particular address."
   (with-foreign-string (addr address)
@@ -9,24 +86,6 @@
   "Connect the socket to a particular address."
   (with-foreign-string (addr address)
     (%connect s addr)))
-
-;; Do I really need all this horrible meta stuff just for 2 cstructs?..
-(defmethod initialize-instance :after ((inst msg) &key size data)
-  (with-slots (raw) inst
-    (tg:finalize inst (lambda () (msg-close raw)))
-    (when size
-      (msg-init-size raw size))
-    (when data
-      (multiple-value-bind (ptr len)
-	  (etypecase data
-	    (string (let ((ptr (convert-to-foreign data :string)))
-		      (values ptr (1+ (foreign-funcall "strlen" :pointer ptr :long)))))
-	    (array (let* ((len (length data))
-			  (ptr (foreign-alloc :uchar :count len)))
-		     (dotimes (i len)
-		       (setf (mem-aref ptr :uchar i) (aref data i)))
-		     (values ptr len))))
-	(msg-init-data raw ptr len (callback zmq-free))))))
 
 (defmacro with-context ((context app-threads io-threads &optional flags) &body body)
   "Run body in 0MQ context."
@@ -138,7 +197,7 @@ in the case of error."
 		       ,@(loop for (socket . events) in polls
 			    collect `(make-instance 'pollitem
 						    :socket ,socket
-						    :events ,events )))))
+						    :events ,events)))))
      ,@body))
 
 ;
