@@ -173,6 +173,12 @@ only an alternated sequence of send's and recv's")
 only an alternated sequence of recv's and send's. Each send is routed to
 the peer that issued the last received request.")
 
+(defconstant upstream 5
+  "Socket to receive messages from up the stream.")
+
+(defconstant downstream 6
+  "Socket to send messages downstream.")
+
 (defcfun* ("zmq_socket" socket) :pointer
   "Open a socket.
 

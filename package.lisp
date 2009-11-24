@@ -21,33 +21,35 @@
   (:shadow #:sleep #:close)
   (:export
    ;; constants
-   #:hausnumero
-   #:emthread
-   #:efsm
-   #:enocompatproto
-   #:max-vsm-size
-   #:delimiter
-   #:vsm
-   #:poll
-   #:pollin
-   #:pollout
-   #:p2p
-   #:pub
-   #:sub
-   #:req
-   #:rep
-   #:hwm
-   #:lwm
-   #:swap
    #:affinity
+   #:delimiter
+   #:downstream
+   #:efsm
+   #:emthread
+   #:enocompatproto
+   #:hausnumero
+   #:hwm
    #:identity
-   #:subscribe
-   #:unsubscribe
-   #:rate
-   #:recovery-ivl
+   #:lwm
+   #:max-vsm-size
    #:mcast-loop
    #:noblock
    #:noflush
+   #:p2p
+   #:poll
+   #:pollin
+   #:pollout
+   #:pub
+   #:rate
+   #:recovery-ivl
+   #:rep
+   #:req
+   #:sub
+   #:subscribe
+   #:swap
+   #:unsubscribe
+   #:upstream
+   #:vsm
 
    #:events
 
@@ -56,41 +58,41 @@
    #:pollitem
 
    ;; functions
-   #:strerror
-   #:msg-init
-   #:msg-init-size
-   #:msg-init-data
+   #:bind
+   #:close
+   #:connect
+   #:flush
+   #:init
    #:msg-close
-   #:msg-move
    #:msg-copy
-   #:msg-data-as-string
    #:msg-data-as-array
+   #:msg-data-as-string
+   #:msg-init
+   #:msg-init-data
+   #:msg-init-size
+   #:msg-move
    #:msg-size
    #:msg-type
-   #:init
-   #:term
-   #:socket
-   #:close
-   #:setsockopt
-   #:bind
-   #:connect
-   #:send
-   #:flush
+   #:poll
+   #:pollitem-events
+   #:pollitem-fd
+   #:pollitem-revents
+   #:pollitem-socket
    #:recv
+   #:send
+   #:setsockopt
+   #:sleep
+   #:socket
    #:stopwatch-start
    #:stopwatch-stop
-   #:sleep
-   #:poll
-   #:pollitem-socket
-   #:pollitem-fd
-   #:pollitem-events
-   #:pollitem-revents
+   #:strerror
+   #:term
 
    ;; macros
    #:with-context
+   #:with-polls
    #:with-socket
    #:with-stopwatch
-   #:with-polls
 
    ;; conditions
    #:error-again))
