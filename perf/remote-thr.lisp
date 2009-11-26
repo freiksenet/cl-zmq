@@ -11,7 +11,7 @@
   (zmq:with-socket (s ctx zmq:pub)
     (zmq:setsockopt s zmq:rate *rate*)
     (zmq:connect s *connect-address*)
-    (let ((msg (make-instance 'zmq:msg :data #(1 2 3))))
+    (let ((msg (make-instance 'zmq:msg :size *message-size*)))
       (dotimes (i *message-count*)
 	(zmq:send s msg)))))
 
