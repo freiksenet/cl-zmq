@@ -76,7 +76,6 @@ Errors: ENOMEM - the size is too large to allocate."
   (size	:long))
 
 (defcallback zmq-free :void ((ptr :pointer))
-  (format t "zmq-free ~A~%" ptr)
   (foreign-free ptr))
 
 ;;typedef void (zmq_free_fn) (void *data);
