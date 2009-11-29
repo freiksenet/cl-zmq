@@ -16,7 +16,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (cl:eval-when (:load-toplevel :execute)
-  (asdf:operate 'asdf:load-op :cffi-grovel)
+  (asdf:operate 'asdf:load-op :cffi)
   (asdf:operate 'asdf:load-op :trivial-garbage)
   (asdf:operate 'asdf:load-op :iolib.syscalls))
 
