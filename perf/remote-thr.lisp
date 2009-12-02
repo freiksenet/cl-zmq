@@ -13,7 +13,10 @@
     (zmq:connect s *connect-address*)
     (let ((msg (make-instance 'zmq:msg :size *message-size*)))
       (dotimes (i *message-count*)
-	(zmq:send s msg)))))
+	(zmq:msg-init-size msg *message-size*)
+	(zmq:send s msg)
+	(zmq:msg-close msg))
+      (zmq:sleep 10))))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)

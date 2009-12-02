@@ -66,6 +66,7 @@
    #:msg-close
    #:msg-copy
    #:msg-data-as-array
+   #:msg-data-as-is
    #:msg-data-as-string
    #:msg-init
    #:msg-init-data

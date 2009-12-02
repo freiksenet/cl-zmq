@@ -68,10 +68,18 @@ not declared in the api."
   "Initialise an empty message (zero bytes long)."
   (msg	msg))
 
-(defcfun* ("zmq_msg_init_size" msg-init-size) :int
-  "Initialise a message 'size' bytes long.
+(defcfun* ("zmq_msg_init_size" %msg-init-size) :int
+  "Initialises 0MQ message size bytes long. The implementation chooses
+whether it is more efficient to store message content on the
+stack (small messages) or on the heap (large messages).  Therefore,
+never access message data directly via zmq_msg_t members, rather use
+zmq_msg_data and zmq_msg_size functions to get message data and
+size. Note that the message data are not nullified to avoid the
+associated performance impact. Thus you should expect your message to
+contain bogus data after this call.
 
-Errors: ENOMEM - the size is too large to allocate."
+In case of success the function returns zero. Otherwise it returns -1
+and sets errno to the appropriate value."
   (msg	msg)
   (size	:long))
 
@@ -90,8 +98,13 @@ so that it complies with standard C 'free' function."
   (size	:long)
   (ffn	:pointer))			; zmq_free_fn
 
-(defcfun ("zmq_msg_close" msg-close) :int
-  "Deallocate the message."
+(defcfun* ("zmq_msg_close" %msg-close) :int
+  "Deallocates message msg including any associated buffers (unless
+the buffer is shared with another message). Not calling this function
+can result in memory leaks.
+
+In case of success the function returns zero. Otherwise it returns -1
+and sets errno to the appropriate value."
   (msg	msg))
 
 (defcfun ("zmq_msg_move" %msg-move) :int

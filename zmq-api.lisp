@@ -9,11 +9,11 @@
     (with-slots (raw shared) inst
       (setf raw obj)
       (tg:finalize inst (lambda ()
-			  (msg-close raw)
+			  (%msg-close raw)
 			  (foreign-free raw)))
       (when shared
 	(setf (foreign-slot-value obj 'msg 'shared) (if shared 1 0)))
-      (cond (size (msg-init-size raw size))
+      (cond (size (%msg-init-size raw size))
 	    (data
 	     (multiple-value-bind (ptr len)
 		 (etypecase data
@@ -99,6 +99,22 @@ of the flags described above with the exception of ZMQ_NOFLUSH.
 Function raises zmq:error-again for the non-blocking operation if
 syscall returns EAGAIN."
   (%recv s (msg-raw msg) (or flags 0)))
+
+(defun msg-init-size (msg size)
+  "Initialises 0MQ message size bytes long. The implementation chooses
+whether it is more efficient to store message content on the
+stack (small messages) or on the heap (large mes- sages).  Therefore,
+never access message data directly via zmq_msg_t members, rather use
+zmq_msg_data and zmq_msg_size functions to get message data and
+size. Note that the mes- sage data are not nullified to avoid the
+associated performance impact. Thus you should expect your message to
+contain bogus data after this call."
+  (%msg-init-size (msg-raw msg) size))
+
+(defun msg-close (msg)
+  "Deallocates message msg including any associated buffers (unless
+the buffer is shared with another message)."
+  (%msg-close (msg-raw msg)))
 
 (defun msg-size (msg)
   "Return size of message data (in bytes)."
