@@ -1,9 +1,26 @@
-(asdf:oos 'asdf:load-op :cl-zmq)
+;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;;
+;; This file is part of 0MQ.
+;;
+;; 0MQ is free software; you can redistribute it and/or modify it under
+;; the terms of the Lesser GNU General Public License as published by
+;; the Free Software Foundation; either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; 0MQ is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; Lesser GNU General Public License for more details.
+;;
+;; You should have received a copy of the Lesser GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defpackage :zmq-test
-  (:use :cl :cffi))
+(asdf:oos 'asdf:load-op :zeromq)
 
-(in-package :zmq-test)
+(defpackage :zeromq-test
+  (:use :cl))
+
+(in-package :zeromq-test)
 
 (load "thr-parms")
 
@@ -11,7 +28,7 @@
   (zmq:with-socket (s ctx zmq:pub)
     (zmq:setsockopt s zmq:rate *rate*)
     (zmq:connect s *connect-address*)
-    (let ((msg (make-instance 'zmq:msg :size *message-size*)))
+    (let ((msg (make-instance 'zmq:msg)))
       (dotimes (i *message-count*)
 	(zmq:msg-init-size msg *message-size*)
 	(zmq:send s msg)

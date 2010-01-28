@@ -15,29 +15,24 @@
 ;; You should have received a copy of the Lesser GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(asdf:oos 'asdf:load-op :zeromq)
+(cl:eval-when (:load-toplevel :execute)
+  (asdf:operate 'asdf:load-op :cffi)
+  (asdf:operate 'asdf:load-op :trivial-garbage)
+  (asdf:operate 'asdf:load-op :iolib.syscalls))
 
-(defpackage :zeromq-test
-  (:use :cl))
+(defpackage #:zeromq-asd
+  (:use :cl :asdf))
 
-(in-package :zeromq-test)
+(in-package #:zeromq-asd)
 
-(load "lat-parms")
-
-(zmq:with-context (ctx 1 1 zmq:poll)
-  (zmq:with-socket (s ctx zmq:rep)
-    (zmq:bind s *address*)
-    (let ((msg (make-instance 'zmq:msg)))
-      (zmq:with-polls ((poll-in . ((s . zmq:pollin)))
-		       (poll-out . ((s . zmq:pollout))))
-	(dotimes (i *roundtrip-count*)
-	  (zmq:poll poll-in)
-	  (zmq:recv s msg zmq:noblock)
-	  (zmq:poll poll-out)
-	  (zmq:send s msg zmq:noblock))))))
-
-(tg:gc)
-#+sbcl (sb-ext:quit)
-#+clisp (ext:quit)
-
-;
+(defsystem zeromq
+  :name "zeromq"
+  :version "0.1"
+  :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
+  :licence "LGPLv3"
+  :description "Zero MQ 2 bindings"
+  :serial t
+  :components ((:file "package")
+               (:file "meta")
+               (:file "zeromq")
+               (:file "zeromq-api")))

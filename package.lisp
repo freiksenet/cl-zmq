@@ -1,21 +1,21 @@
-;; Copyright 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
 ;;
-;; This file is a part of CL-ZMQ
+;; This file is part of 0MQ.
 ;;
-;; CL-ZMQ is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
+;; 0MQ is free software; you can redistribute it and/or modify it under
+;; the terms of the Lesser GNU General Public License as published by
+;; the Free Software Foundation; either version 3 of the License, or
 ;; (at your option) any later version.
 ;;
-;; CL-ZMQ is distributed in the hope that it will be useful,
+;; 0MQ is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; Lesser GNU General Public License for more details.
 ;;
-;; You should have received a copy of the GNU General Public License
+;; You should have received a copy of the Lesser GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defpackage #:cl-zmq
+(defpackage #:zeromq
   (:nicknames :zmq)
   (:use :cl :cffi)
   (:shadow #:sleep #:close)
@@ -98,11 +98,11 @@
    ;; conditions
    #:error-again))
 
-(in-package :cl-zmq)
+(in-package :zeromq)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (define-foreign-library zmq
+  (define-foreign-library zeromq
     (:unix (:or "libzmq.so.0.0.0" "libzmq.so"))
     (t "libzmq")))
 
-(use-foreign-library zmq)
+(use-foreign-library zeromq)

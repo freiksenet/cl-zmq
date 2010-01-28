@@ -1,27 +1,67 @@
-(in-package :cl-zmq)
+;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;;
+;; This file is part of 0MQ.
+;;
+;; 0MQ is free software; you can redistribute it and/or modify it under
+;; the terms of the Lesser GNU General Public License as published by
+;; the Free Software Foundation; either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; 0MQ is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; Lesser GNU General Public License for more details.
+;;
+;; You should have received a copy of the Lesser GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+(in-package :zeromq)
+
+;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
+(defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
+                             (null-terminated-p t) (start 0) end)
+  "Allocate a foreign string containing Lisp string STRING.
+The string must be freed with FOREIGN-STRING-FREE."
+  (check-type string string)
+  (cffi::with-checked-simple-vector ((string (coerce string 'babel:unicode-string))
+				     (start start) (end end))
+    (declare (type simple-string string))
+    (let* ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding))
+           (count (funcall (cffi::octet-counter mapping) string start end 0))
+           (length (if null-terminated-p
+                       (+ count (cffi::null-terminator-len encoding))
+                       count))
+	   (ptr (funcall alloc-fn length)))
+      (funcall (cffi::encoder mapping) string start end ptr 0)
+      (when null-terminated-p
+        (dotimes (i (cffi::null-terminator-len encoding))
+          (setf (mem-ref ptr :char (+ count i)) 0)))
+      (values ptr length))))
 
 (defclass msg ()
-  ((raw		:accessor msg-raw :initform nil)
-   (shared	:accessor msg-shared :initform 0 :initarg :shared)))
+  ((raw		:accessor msg-raw :initform nil)))
 
 (defmethod initialize-instance :after ((inst msg) &key size data)
   (let ((obj (foreign-alloc 'msg)))
-    (with-slots (raw shared) inst
-      (setf raw obj)
-      (tg:finalize inst (lambda ()
-			  (%msg-close raw)
-			  (foreign-free raw)))
-      (when shared
-	(setf (foreign-slot-value obj 'msg 'shared) (if shared 1 0)))
-      (cond (size (%msg-init-size raw size))
-	    (data
-	     (multiple-value-bind (ptr len)
-		 (etypecase data
-		   (string (foreign-string-alloc data))
-		   (array (values (foreign-alloc :uchar :initial-contents data)
-				  (length data))))
-	       (msg-init-data raw ptr len (callback zmq-free))))
-	    (t (msg-init raw))))))
+    (tg:finalize inst (lambda ()
+			(%msg-close obj)
+			(foreign-free obj)))
+    (cond (size (%msg-init-size obj size))
+	  (data
+	   (etypecase data
+	     (string (copy-lisp-string-octets
+		      data (lambda (sz)
+			     (%msg-init-size obj sz)
+			     (%msg-data obj))))
+	     (array (progn
+		      (%msg-init-size obj (length data))
+		      (let ((ptr (%msg-data obj))
+			    (i -1))
+			(map nil (lambda (x)
+				   (setf (mem-aref ptr :uchar (incf i)) x))
+			     data))))))
+	  (t (msg-init obj)))
+    (setf (msg-raw inst) obj)))
 
 (defclass pollitem ()
   ((raw		:accessor pollitem-raw :initform nil)
@@ -36,29 +76,24 @@
     (tg:finalize inst (lambda () (foreign-free obj)))))
 
 (defun bind (s address)
-  "Bind the socket to a particular address."
   (with-foreign-string (addr address)
     (%bind s addr)))
 
 (defun connect (s address)
-  "Connect the socket to a particular address."
   (with-foreign-string (addr address)
     (%connect s addr)))
 
 (defmacro with-context ((context app-threads io-threads &optional flags) &body body)
-  "Run body in 0MQ context."
   `(let ((,context (init ,app-threads ,io-threads (or ,flags 0))))
      ,@body
      (term ,context)))
 
 (defmacro with-socket ((socket context type) &body body)
-  "Run body in socket context."
   `(let ((,socket (socket ,context ,type)))
      ,@body
      (close ,socket)))
 
 (defmacro with-stopwatch (&body body)
-  "Measure runtime of body."
   (let ((watch (gensym)))
     `(with-foreign-object (,watch :long 2)
        (setq ,watch (stopwatch-start))
@@ -69,13 +104,11 @@
   (%msg-data (msg-raw msg)))
 
 (defun msg-data-as-string (msg)
-  "Return message data in the form of string."
   (let ((data (%msg-data (msg-raw msg))))
     (unless (zerop (pointer-address data))
       (convert-from-foreign data :string))))
 
 (defun msg-data-as-array (msg)
-  "Return message data in the form of bytes array."
   (let ((data (%msg-data (msg-raw msg))))
     (unless (zerop (pointer-address data))
       (let* ((len (msg-size msg))
@@ -85,58 +118,27 @@
 	arr))))
 
 (defun send (s msg &optional flags)
-  "Send the message 'msg' to the socket 's'. 'flags' argument can be
-combination the flags described above.
-
-Function raises zmq:error-again for the non-blocking operation if
-syscall returns EAGAIN."
   (%send s (msg-raw msg) (or flags 0)))
 
 (defun recv (s msg &optional flags)
-  "Receive a message from the socket 's'. 'flags' argument can be combination
-of the flags described above with the exception of ZMQ_NOFLUSH.
-
-Function raises zmq:error-again for the non-blocking operation if
-syscall returns EAGAIN."
   (%recv s (msg-raw msg) (or flags 0)))
 
 (defun msg-init-size (msg size)
-  "Initialises 0MQ message size bytes long. The implementation chooses
-whether it is more efficient to store message content on the
-stack (small messages) or on the heap (large mes- sages).  Therefore,
-never access message data directly via zmq_msg_t members, rather use
-zmq_msg_data and zmq_msg_size functions to get message data and
-size. Note that the mes- sage data are not nullified to avoid the
-associated performance impact. Thus you should expect your message to
-contain bogus data after this call."
   (%msg-init-size (msg-raw msg) size))
 
 (defun msg-close (msg)
-  "Deallocates message msg including any associated buffers (unless
-the buffer is shared with another message)."
   (%msg-close (msg-raw msg)))
 
 (defun msg-size (msg)
-  "Return size of message data (in bytes)."
   (%msg-size (msg-raw msg)))
 
 (defun msg-move (dst src)
-  "Move the content of the message from 'src' to 'dest'. The content isn't
-copied, just moved. 'src' is an empty message after the call. Original
-content of 'dest' message is deallocated."
   (%msg-move (msg-raw dst) (msg-raw src)))
 
 (defun msg-copy (dst src)
-  "Copy the 'src' message to 'dest'. The content isn't copied, instead
-reference count is increased. Don't modify the message data after the
-call as they are shared between two messages. Original content of 'dest'
-message is deallocated."
   (%msg-copy (msg-raw dst) (msg-raw src)))
 
 (defun setsockopt (socket option value)
-  "Sets an option on the socket. 'option' argument specifies the option (see
-the option list above). 'optval' is a pointer to the value to set,
-'optvallen' is the size of the value in bytes."
   (etypecase value
     (string (with-foreign-string (string value)
 	      (%setsockopt socket option string (length value))))
@@ -144,10 +146,7 @@ the option list above). 'optval' is a pointer to the value to set,
 	       (setf (mem-aref int :long 0) value)
 	       (%setsockopt socket option int (foreign-type-size :long))))))
 
-(defun poll (items)
-  "Polls for the items specified by 'items'. Number of items in the array is
-determined by 'nitems' argument. Returns number of items signaled, -1
-in the case of error."
+(defun poll (items &optional (timeout -1))
   (let ((len (length items)))
     (with-foreign-object (%items 'pollitem len)
       (dotimes (i len)
@@ -157,17 +156,18 @@ in the case of error."
 	    (setf socket (pollitem-socket item)
 		  fd (pollitem-fd item)
 		  events (pollitem-events item)))))
-      (let ((ret (%poll %items len)))
-	(if (> ret 0)
+      (let ((ret (%poll %items len timeout)))
+	(cond
+	  ((zerop ret) nil)
+	  ((plusp ret)
 	    (loop for i below len
 	       for revent = (foreign-slot-value (mem-aref %items 'pollitem i)
 						'pollitem
 						'revents)
-	       collect (setf (pollitem-revents (nth i items)) revent))
-	    (error (convert-from-foreign (%strerror *errno*) :string)))))))
+	       collect (setf (pollitem-revents (nth i items)) revent)))
+	  (t (error (convert-from-foreign (%strerror *errno*) :string))))))))
 
 (defmacro with-polls (list &body body)
-  "Automatically creates lists of pollitems."
   `(let ,(loop for (name . polls) in list
 	    collect `(,name
 		      (list
