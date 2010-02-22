@@ -1,4 +1,4 @@
-;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;; Copyright (c) 2009, 2010 Vitaly Mayatskikh <v.mayatskih@gmail.com>
 ;;
 ;; This file is part of 0MQ.
 ;;
