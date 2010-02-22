@@ -53,6 +53,15 @@ The string must be freed with FOREIGN-STRING-FREE."
 		      data (lambda (sz)
 			     (%msg-init-size obj sz)
 			     (%msg-data obj))))
+	     ((simple-array (unsigned-byte 8))
+	      (let ((len (length data)))
+		(%msg-init-size obj len)
+		(with-pointer-to-vector-data (ptr data)
+		  (foreign-funcall "memcpy"
+				   :pointer (%msg-data obj)
+				   :pointer ptr
+				   :long len
+				   :pointer))))
 	     (array (progn
 		      (%msg-init-size obj (length data))
 		      (let ((ptr (%msg-data obj))
