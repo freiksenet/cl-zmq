@@ -43,9 +43,13 @@ The string must be freed with FOREIGN-STRING-FREE."
 
 (defmethod initialize-instance :after ((inst msg) &key size data)
   (let ((obj (foreign-alloc 'msg)))
-    (tg:finalize inst (lambda ()
-			(%msg-close obj)
-			(foreign-free obj)))
+    #-sbcl(tg:finalize inst (lambda ()
+			      (%msg-close obj)
+			      (foreign-free obj)))
+    #+sbcl(sb-ext:finalize inst (lambda ()
+				       (%msg-close obj)
+				       (foreign-free obj))
+			   :dont-save t)
     (cond (size (%msg-init-size obj size))
 	  (data
 	   (etypecase data
@@ -82,7 +86,8 @@ The string must be freed with FOREIGN-STRING-FREE."
 (defmethod initialize-instance :after ((inst pollitem) &key)
   (let ((obj (foreign-alloc 'pollitem)))
     (setf (pollitem-raw inst) obj)
-    (tg:finalize inst (lambda () (foreign-free obj)))))
+    #-sbcl(tg:finalize inst (lambda () (foreign-free obj)))
+    #+sbcl(sb-ext:finalize inst (lambda () (foreign-free obj)) :dont-save t)))
 
 (defun bind (s address)
   (with-foreign-string (addr address)
