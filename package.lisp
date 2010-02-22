@@ -39,6 +39,7 @@
    #:poll
    #:pollin
    #:pollout
+   #:pollerr
    #:pub
    #:rate
    #:recovery-ivl
