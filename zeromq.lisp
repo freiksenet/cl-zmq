@@ -222,6 +222,7 @@
 
 (defconstant pollin 1)
 (defconstant pollout 2)
+(defconstant pollerr 4)
 
 (defcstruct pollitem
   (socket	:pointer)
