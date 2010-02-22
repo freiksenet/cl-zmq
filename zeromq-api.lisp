@@ -177,4 +177,14 @@ The string must be freed with FOREIGN-STRING-FREE."
 						    :events ,events)))))
      ,@body))
 
+(defun version ()
+  (with-foreign-objects ((major :int)
+			 (minor :int)
+			 (patch :int))
+    (%version major minor patch)
+    (format nil "~d.~d.~d"
+	    (mem-ref major :int)
+	    (mem-ref minor :int)
+	    (mem-ref patch :int))))
+
 ;

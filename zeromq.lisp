@@ -249,3 +249,8 @@
 
 (defcfun ("zmq_sleep" sleep) :void
   (seconds	:int))
+
+(defcfun ("zmq_version" %version) :void
+  (major	:pointer)
+  (minor	:pointer)
+  (patch	:pointer))

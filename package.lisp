@@ -89,6 +89,7 @@
    #:stopwatch-stop
    #:strerror
    #:term
+   #:version
 
    ;; macros
    #:with-context
