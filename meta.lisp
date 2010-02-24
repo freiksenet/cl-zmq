@@ -47,7 +47,7 @@
 	    (defcfun ,name ,return-type
 	      ,@args*)
 
-	    (defun ,l-name (,@names &optional ,@opts-init)
+	    (defun ,l-name (,@names ,@(when opts-init `(&optional ,@opts-init)))
 	      ,docstring
 	      (let ((,ret (,n-name ,@names ,@opts)))
 		(if ,(if (eq return-type :pointer)
