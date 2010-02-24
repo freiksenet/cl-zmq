@@ -1,4 +1,4 @@
-;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;; Copyright (c) 2009, 2010 Vitaly Mayatskikh <v.mayatskih@gmail.com>
 ;;
 ;; This file is part of 0MQ.
 ;;
@@ -53,7 +53,8 @@
 		(if ,(if (eq return-type :pointer)
 			   `(zerop (pointer-address ,ret))
 			   `(not (zerop ,ret)))
-		    (cond
-		      ((eq *errno* isys:eagain) (error 'error-again :argument *errno*))
-		      (t (error (convert-from-foreign (%strerror *errno*) :string))))
+		    (let ((errno (errno)))
+		      (cond
+			((eq errno isys:eagain) (error 'error-again :argument errno))
+			(t (error (convert-from-foreign (%strerror errno) :string)))))
 		,ret))))))))

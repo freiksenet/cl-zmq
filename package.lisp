@@ -62,6 +62,7 @@
    #:bind
    #:close
    #:connect
+   #:errno
    #:flush
    #:init
    #:msg-close

@@ -17,8 +17,6 @@
 
 (in-package :zeromq)
 
-(defcvar "errno" :int)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ errors.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,3 +252,5 @@
   (major	:pointer)
   (minor	:pointer)
   (patch	:pointer))
+
+(defcfun ("zmq_errno" errno) :int)

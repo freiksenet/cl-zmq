@@ -174,7 +174,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 						'pollitem
 						'revents)
 	       collect (setf (pollitem-revents (nth i items)) revent)))
-	  (t (error (convert-from-foreign (%strerror *errno*) :string))))))))
+	  (t (error (convert-from-foreign (%strerror (errno)) :string))))))))
 
 (defmacro with-polls (list &body body)
   `(let ,(loop for (name . polls) in list
