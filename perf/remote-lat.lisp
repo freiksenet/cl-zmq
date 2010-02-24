@@ -47,4 +47,5 @@
 (tg:gc)
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
+#+ccl (ccl:quit)
 ;
