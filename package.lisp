@@ -34,7 +34,6 @@
    #:max-vsm-size
    #:mcast-loop
    #:noblock
-   #:noflush
    #:p2p
    #:poll
    #:pollin
@@ -63,7 +62,6 @@
    #:close
    #:connect
    #:errno
-   #:flush
    #:init
    #:msg-close
    #:msg-copy

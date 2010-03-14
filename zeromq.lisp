@@ -197,16 +197,11 @@
 
 (defconstant noblock 1)
 
-(defconstant noflush 2)
-
 (defcfun* ("zmq_send" %send) :int
   (s		:pointer)
   (msg		msg)
   :optional
   (flags	:int))
-
-(defcfun* ("zmq_flush" flush) :int
-  (s	:pointer))
 
 (defcfun* ("zmq_recv" %recv) :int
   (s		:pointer)
