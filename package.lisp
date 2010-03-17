@@ -40,6 +40,7 @@
    #:pollout
    #:pollerr
    #:pub
+   #:raw
    #:rate
    #:recovery-ivl
    #:rep
@@ -72,11 +73,13 @@
    #:msg-init-data
    #:msg-init-size
    #:msg-move
+   #:msg-raw
    #:msg-size
    #:msg-type
    #:poll
    #:pollitem-events
    #:pollitem-fd
+   #:pollitem-raw
    #:pollitem-revents
    #:pollitem-socket
    #:recv
