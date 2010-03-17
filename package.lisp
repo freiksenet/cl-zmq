@@ -33,15 +33,17 @@
    #:lwm
    #:max-vsm-size
    #:mcast-loop
+   #:msg-shared
+   #:msg-tbc
    #:noblock
    #:p2p
    #:poll
+   #:pollerr
    #:pollin
    #:pollout
-   #:pollerr
    #:pub
-   #:raw
    #:rate
+   #:raw
    #:recovery-ivl
    #:rep
    #:req

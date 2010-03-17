@@ -23,26 +23,6 @@
 
 (defconstant hausnumero 156384712)
 
-;;  On Windows platform some of the standard POSIX errnos are not defined.
-;; #ifndef ENOTSUP
-;; #define ENOTSUP (ZMQ_HAUSNUMERO + 1)
-;; #endif
-;; #ifndef EPROTONOSUPPORT
-;; #define EPROTONOSUPPORT (ZMQ_HAUSNUMERO + 2)
-;; #endif
-;; #ifndef ENOBUFS
-;; #define ENOBUFS (ZMQ_HAUSNUMERO + 3)
-;; #endif
-;; #ifndef ENETDOWN
-;; #define ENETDOWN (ZMQ_HAUSNUMERO + 4)
-;; #endif
-;; #ifndef EADDRINUSE
-;; #define EADDRINUSE (ZMQ_HAUSNUMERO + 5)
-;; #endif
-;; #ifndef EADDRNOTAVAIL
-;; #define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
-;; #endif
-
 ;;  Native 0MQ error codes.
 (defconstant emthread (+ hausnumero 50))
 (defconstant efsm (+ hausnumero 51))
@@ -61,6 +41,12 @@
 ;;  message instead of regular pointer to the data.
 (defconstant delimiter 31)
 (defconstant vsm 32)
+
+;; Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
+;; (it has no equivalent in the wire format), however, making  it a flag
+;; allows us to pack the stucture tigher and thus improve performance.
+(defconstant msg-tbc 1)
+(defconstant msg-shared 128)
 
 (defcstruct (msg)
   (content	:pointer)
@@ -121,9 +107,6 @@
 ;;  0MQ socket definition.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;  Creating a 0MQ socket.
-;;  **********************
-
 (defconstant p2p 0)
 (defconstant pub 1)
 (defconstant sub 2)
@@ -133,21 +116,6 @@
 (defconstant xrep 6)
 (defconstant upstream 7)
 (defconstant downstream 8)
-
-(defcfun* ("zmq_socket" socket) :pointer
-  (context	:pointer)
-  (type		:int))
-
-;;  Destroying the socket.
-;;  **********************
-
-(defcfun ("zmq_close" close) :int
-  (s	:pointer))
-
-;;  Manipulating socket options.
-;;  ****************************
-
-;;  Available socket options, their types and default values.
 
 (defconstant hwm 1)
 (defconstant lwm 2)
@@ -162,27 +130,20 @@
 (defconstant sndbuf 11)
 (defconstant rcvbuf 12)
 
+(defconstant noblock 1)
+
+(defcfun* ("zmq_socket" socket) :pointer
+  (context	:pointer)
+  (type		:int))
+
+(defcfun ("zmq_close" close) :int
+  (s	:pointer))
+
 (defcfun* ("zmq_setsockopt" %setsockopt) :int
   (s		:pointer)
   (option	:int)
   (optval	:pointer)
   (optvallen	:long))
-
-;;  Creating connections.
-;;  *********************
-
-;;  Addresses are composed of the name of the protocol to use followed by ://
-;;  and a protocol-specific address. Available protocols:
-;;
-;;  tcp - the address is composed of IP address and port delimited by colon
-;;        sign (:). The IP address can be a hostname (with 'connect') or
-;;        a network interface name (with 'bind'). Examples "tcp://eth0:5555",
-;;        "tcp://192.168.0.1:20000", "tcp://hq.mycompany.com:80".
-;;
-;;  pgm & udp - both protocols have same address format. It's network interface
-;;              to use, semicolon (;), multicast group IP address, colon (:) and
-;;              port. Examples: "pgm://eth2;224.0.0.1:8000",
-;;              "udp://192.168.0.111;224.1.1.1:5555".
 
 (defcfun* ("zmq_bind" %bind) :int
   (s	:pointer)
@@ -192,10 +153,6 @@
   (s	:pointer)
   (addr	:pointer :char))
 
-;;  Sending and receiving messages.
-;;  *******************************
-
-(defconstant noblock 1)
 
 (defcfun* ("zmq_send" %send) :int
   (s		:pointer)
@@ -231,9 +188,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper functions.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Helper functions used by perf tests so that they don't have to care
-;; about minutiae of time-related functions on different OS platforms.
 
 (defcfun ("zmq_stopwatch_start" stopwatch-start) :pointer)
 
