@@ -109,6 +109,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (define-foreign-library zeromq
     (:unix (:or "libzmq.so.0.0.0" "libzmq.so"))
+    (:windows "libzmq.dll")
     (t "libzmq")))
 
 (use-foreign-library zeromq)

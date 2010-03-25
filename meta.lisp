@@ -55,6 +55,7 @@
 			   `(not (zerop ,ret)))
 		    (let ((errno (errno)))
 		      (cond
+			#-windows
 			((eq errno isys:eagain) (error 'error-again :argument errno))
 			(t (error (convert-from-foreign (%strerror errno) :string)))))
 		,ret))))))))

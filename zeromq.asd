@@ -1,4 +1,4 @@
-;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;; Copyright (c) 2009, 2010 Vitaly Mayatskikh <v.mayatskih@gmail.com>
 ;;
 ;; This file is part of 0MQ.
 ;;
@@ -18,6 +18,7 @@
 (cl:eval-when (:load-toplevel :execute)
   (asdf:operate 'asdf:load-op :cffi)
   (asdf:operate 'asdf:load-op :trivial-garbage)
+#-windows
   (asdf:operate 'asdf:load-op :iolib.syscalls))
 
 (defpackage #:zeromq-asd
