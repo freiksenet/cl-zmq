@@ -45,7 +45,7 @@
 ;; Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
 ;; (it has no equivalent in the wire format), however, making  it a flag
 ;; allows us to pack the stucture tigher and thus improve performance.
-(defconstant msg-tbc 1)
+(defconstant msg-more 1)
 (defconstant msg-shared 128)
 
 (defcstruct (msg)
@@ -131,6 +131,7 @@
 (defconstant rcvbuf 12)
 
 (defconstant noblock 1)
+(defconstant more 2)
 
 (defcfun* ("zmq_socket" socket) :pointer
   (context	:pointer)
