@@ -17,6 +17,11 @@
 
 (in-package :zeromq)
 
+(defcfun ("memcpy" memcpy) :pointer
+  (dst	:pointer)
+  (src	:pointer)
+  (len	:long))
+
 ;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
 (defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
                              (null-terminated-p t) (start 0) end)
@@ -57,11 +62,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 	      (let ((len (length data)))
 		(%msg-init-size obj len)
 		(with-pointer-to-vector-data (ptr data)
-		  (foreign-funcall "memcpy"
-				   :pointer (%msg-data obj)
-				   :pointer ptr
-				   :long len
-				   :pointer))))
+		  (memcpy (%msg-data obj) ptr len))))
 	     (array (progn
 		      (%msg-init-size obj (length data))
 		      (let ((ptr (%msg-data obj))
@@ -121,9 +122,10 @@ The string must be freed with FOREIGN-STRING-FREE."
   (let ((data (%msg-data (msg-raw msg))))
     (unless (zerop (pointer-address data))
       (let* ((len (msg-size msg))
-	     (arr (make-array len :element-type '(unsigned-byte))))
-	(dotimes (i len)
-	  (setf (aref arr i) (mem-aref data :uchar i)))
+	     (arr (make-array len :element-type '(unsigned-byte 8))))
+	(declare (type (simple-array (unsigned-byte 8)) arr))
+	(with-pointer-to-vector-data (ptr arr)
+	  (memcpy ptr data len))
 	arr))))
 
 (defun send (s msg &optional flags)
