@@ -95,20 +95,26 @@ The string must be freed with FOREIGN-STRING-FREE."
 
 (defmacro with-context ((context app-threads io-threads &optional flags) &body body)
   `(let ((,context (init ,app-threads ,io-threads (or ,flags 0))))
-     ,@body
-     (term ,context)))
+     (unwind-protect
+	  (progn ,@body)
+       (term ,context))))
 
 (defmacro with-socket ((socket context type) &body body)
   `(let ((,socket (socket ,context ,type)))
-     ,@body
-     (close ,socket)))
+     (unwind-protect
+	  (progn ,@body)
+       (close ,socket))))
 
 (defmacro with-stopwatch (&body body)
-  (let ((watch (gensym)))
-    `(with-foreign-object (,watch :long 2)
-       (setq ,watch (stopwatch-start))
-       ,@body
-       (stopwatch-stop ,watch))))
+  (let ((watch (gensym))
+	(ret (gensym)))
+    `(let (,ret)
+       (with-foreign-object (,watch :long 2)
+	 (setq ,watch (stopwatch-start))
+	 (unwind-protect
+	      (progn ,@body)
+	   (setq ,ret (stopwatch-stop ,watch))))
+       ,ret)))
 
 (defun msg-data-as-is (msg)
   (%msg-data (msg-raw msg)))
