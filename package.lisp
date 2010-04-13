@@ -69,6 +69,7 @@
    #:connect
    #:device
    #:errno
+   #:getsockopt
    #:init
    #:msg-close
    #:msg-copy

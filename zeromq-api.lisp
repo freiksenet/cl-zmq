@@ -163,6 +163,14 @@ The string must be freed with FOREIGN-STRING-FREE."
 	       (setf (mem-aref int :long 0) value)
 	       (%setsockopt socket option int (foreign-type-size :long))))))
 
+(defun getsockopt (socket option)
+  (with-foreign-objects ((opt :int64)
+			 (len :long))
+    (setf (mem-aref opt :int64) 0
+	  (mem-aref len :long) (foreign-type-size :int64))
+    (%getsockopt socket option opt len)
+    (mem-aref opt :int64)))
+
 (defun poll (items &optional (timeout -1))
   (let ((len (length items)))
     (with-foreign-object (%items 'pollitem len)

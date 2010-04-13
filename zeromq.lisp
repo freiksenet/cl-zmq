@@ -146,6 +146,12 @@
   (optval	:pointer)
   (optvallen	:long))
 
+(defcfun* ("zmq_getsockopt" %getsockopt) :int
+  (s		:pointer)
+  (option	:int)
+  (optval	:pointer)
+  (optvallen	:pointer))
+
 (defcfun* ("zmq_bind" %bind) :int
   (s	:pointer)
   (addr	:pointer :char))
