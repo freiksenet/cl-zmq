@@ -204,3 +204,8 @@
   (patch	:pointer))
 
 (defcfun ("zmq_errno" errno) :int)
+
+(defcfun* ("zmq_device" %device) :int
+  (device	:int)
+  (insocket	:pointer)
+  (outsocket	:pointer))

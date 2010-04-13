@@ -27,6 +27,7 @@
    #:efsm
    #:emthread
    #:enocompatproto
+   #:forwarder
    #:hausnumero
    #:hwm
    #:identity
@@ -42,11 +43,13 @@
    #:pollin
    #:pollout
    #:pub
+   #:queue
    #:rate
    #:raw
    #:recovery-ivl
    #:rep
    #:req
+   #:streamer
    #:sub
    #:subscribe
    #:swap
@@ -64,6 +67,7 @@
    #:bind
    #:close
    #:connect
+   #:device
    #:errno
    #:init
    #:msg-close
