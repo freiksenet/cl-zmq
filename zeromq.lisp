@@ -129,9 +129,10 @@
 (defconstant mcast-loop 10)
 (defconstant sndbuf 11)
 (defconstant rcvbuf 12)
+(defconstant rcvmore 13)
 
 (defconstant noblock 1)
-(defconstant more 2)
+(defconstant sndmore 2)
 
 (defcfun* ("zmq_socket" socket) :pointer
   (context	:pointer)
