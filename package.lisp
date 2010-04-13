@@ -46,9 +46,11 @@
    #:queue
    #:rate
    #:raw
+   #:rcvmore
    #:recovery-ivl
    #:rep
    #:req
+   #:sndmore
    #:streamer
    #:sub
    #:subscribe
