@@ -1,19 +1,12 @@
-;; Copyright (c) 2009 Vitaly Mayatskikh <v.mayatskih@gmail.com>
+;; Copyright (c) 2009, 2010 Vitaly Mayatskikh <v.mayatskih@gmail.com>
 ;;
-;; This file is part of 0MQ.
+;; This file is part of CL-ZMQ.
 ;;
-;; 0MQ is free software; you can redistribute it and/or modify it under
-;; the terms of the Lesser GNU General Public License as published by
-;; the Free Software Foundation; either version 3 of the License, or
-;; (at your option) any later version.
-;;
-;; 0MQ is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; Lesser GNU General Public License for more details.
-;;
-;; You should have received a copy of the Lesser GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; Vitaly Mayatskikh grants you the rights to distribute
+;; and use this software as governed by the terms
+;; of the Lisp Lesser GNU Public License
+;; (http://opensource.franz.com/preamble.html),
+;; known as the LLGPL.
 
 (in-package :zeromq-test)
 
