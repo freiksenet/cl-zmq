@@ -111,7 +111,6 @@
 (defconstant downstream 8)
 
 (defconstant hwm 1)
-(defconstant lwm 2)
 (defconstant swap 3)
 (defconstant affinity 4)
 (defconstant identity 5)
