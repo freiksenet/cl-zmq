@@ -98,17 +98,6 @@ The string must be freed with FOREIGN-STRING-FREE."
 	  (progn ,@body)
        (close ,socket))))
 
-(defmacro with-stopwatch (&body body)
-  (let ((watch (gensym))
-	(ret (gensym)))
-    `(let (,ret)
-       (with-foreign-object (,watch :long 2)
-	 (setq ,watch (stopwatch-start))
-	 (unwind-protect
-	      (progn ,@body)
-	   (setq ,ret (stopwatch-stop ,watch))))
-       ,ret)))
-
 (defun msg-data-as-is (msg)
   (%msg-data (msg-raw msg)))
 

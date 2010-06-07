@@ -189,14 +189,6 @@
 ;;  Helper functions.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcfun ("zmq_stopwatch_start" stopwatch-start) :pointer)
-
-(defcfun ("zmq_stopwatch_stop" stopwatch-stop) :ulong
-  (watch	:pointer))
-
-(defcfun ("zmq_sleep" sleep) :void
-  (seconds	:int))
-
 (defcfun ("zmq_version" %version) :void
   (major	:pointer)
   (minor	:pointer)

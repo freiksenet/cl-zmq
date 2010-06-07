@@ -86,10 +86,7 @@
    #:recv
    #:send
    #:setsockopt
-   #:sleep
    #:socket
-   #:stopwatch-start
-   #:stopwatch-stop
    #:strerror
    #:term
    #:version
@@ -98,7 +95,6 @@
    #:with-context
    #:with-polls
    #:with-socket
-   #:with-stopwatch
 
    ;; conditions
    #:error-again))
