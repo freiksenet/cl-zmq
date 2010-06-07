@@ -14,5 +14,5 @@
 (defvar *bind-address* "tcp://lo:8000")
 (defvar *connect-address* "tcp://localhost:8000")
 (defvar *message-count* 1000)
-(defvar *message-size* 256)
+(defvar *message-size* 32)
 (defvar *rate* 256)

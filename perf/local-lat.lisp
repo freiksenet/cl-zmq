@@ -17,7 +17,7 @@
 
 (load "lat-parms")
 
-(zmq:with-context (ctx 1 1)
+(zmq:with-context (ctx 1)
   (zmq:with-socket (s ctx zmq:rep)
     (zmq:bind s *address*)
     (let ((msg (make-instance 'zmq:msg)))
@@ -31,12 +31,12 @@
 		 (format t "size ~d, ~a~%" (zmq:msg-size msg) (zmq:msg-data-as-array msg)))
 	     (zmq:error-again (c)
 	       (declare (ignore c))
-	       (sleep 0.01)
+	       (isys:usleep (round (* 1e6 0.01)))
 	       (go retry))))
 ;; blocking recv
         (zmq:recv s msg)
 	(zmq:send s msg)))
-    (zmq:sleep 1)))
+    (isys:usleep (round 1e6))))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)

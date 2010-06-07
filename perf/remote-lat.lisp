@@ -16,20 +16,21 @@
 (in-package :zeromq-test)
 
 (load "lat-parms")
+(load "helpers")
 
 (defvar *elapsed* nil)
 (defvar *latency* nil)
 
-(zmq::with-context (ctx 1 1)
+(zmq::with-context (ctx 1)
   (zmq:with-socket (s ctx zmq:req)
     (zmq:connect s *address*)
     (let ((msg (make-instance 'zmq:msg :size *message-size*)))
       (setf *elapsed*
-	    (zmq:with-stopwatch
+	    (with-stopwatch
 		(dotimes (i *roundtrip-count*)
 		  (zmq:send s msg)
 		  (zmq:recv s msg)))))
-    (zmq:sleep 1)))
+    (isys:usleep (round 1e6))))
 
 (setf *latency* (/ *elapsed* (* 2 *roundtrip-count*)))
 

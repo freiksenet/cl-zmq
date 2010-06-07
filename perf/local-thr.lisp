@@ -9,6 +9,7 @@
 ;; known as the LLGPL.
 
 (asdf:oos 'asdf:load-op :zeromq)
+(asdf:oos 'asdf:load-op :iolib.syscalls)
 
 (defpackage :zeromq-test
   (:use :cl))
@@ -16,12 +17,13 @@
 (in-package :zeromq-test)
 
 (load "thr-parms")
+(load "helpers")
 
 (defvar *elapsed* nil)
 (defvar *throughput* nil)
 (defvar *megabits* nil)
 
-(zmq::with-context (ctx 1 1)
+(zmq::with-context (ctx 1)
   (zmq:with-socket (s ctx zmq:sub)
     (zmq:setsockopt s zmq:subscribe "")
     (zmq:setsockopt s zmq:rate *rate*)
@@ -29,7 +31,7 @@
     (let ((msg (make-instance 'zmq:msg)))
       (zmq:recv s msg)
       (setf *elapsed*
-	    (zmq:with-stopwatch
+	    (with-stopwatch
 	      (dotimes (i (1- *message-count*))
 		(zmq:recv s msg))))))
   (setq *throughput* (* (/ *message-count* *elapsed*) 1e6)

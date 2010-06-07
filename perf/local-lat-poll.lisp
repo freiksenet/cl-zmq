@@ -17,7 +17,7 @@
 
 (load "lat-parms")
 
-(zmq:with-context (ctx 1 1 zmq:poll)
+(zmq:with-context (ctx 1)
   (zmq:with-socket (s ctx zmq:rep)
     (zmq:bind s *address*)
     (let ((msg (make-instance 'zmq:msg)))
