@@ -86,8 +86,8 @@ The string must be freed with FOREIGN-STRING-FREE."
   (with-foreign-string (addr address)
     (%connect s addr)))
 
-(defmacro with-context ((context app-threads io-threads &optional flags) &body body)
-  `(let ((,context (init ,app-threads ,io-threads (or ,flags 0))))
+(defmacro with-context ((context io-threads) &body body)
+  `(let ((,context (init ,io-threads)))
      (unwind-protect
 	  (progn ,@body)
        (term ,context))))

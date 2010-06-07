@@ -86,12 +86,8 @@
 ;;  0MQ infrastructure (a.k.a. context) initialisation & termination.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant poll 1)
-
 (defcfun* ("zmq_init" init) :pointer
-  (app-threads	:int)
-  (io-threads	:int)
-  (flags	:int))
+  (io-threads	:int))
 
 (defcfun ("zmq_term" term) :int
   (context	:pointer))

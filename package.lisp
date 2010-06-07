@@ -77,7 +77,6 @@
    #:msg-raw
    #:msg-size
    #:msg-type
-   #:poll
    #:pollitem-events
    #:pollitem-fd
    #:pollitem-raw
