@@ -11,7 +11,7 @@
 (defpackage #:zeromq
   (:nicknames :zmq)
   (:use :cl :cffi)
-  (:shadow #:sleep #:close #:identity)
+  (:shadow #:close #:identity)
   (:export
    ;; constants
    #:affinity
