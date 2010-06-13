@@ -9,7 +9,6 @@
 ;; known as the LLGPL.
 
 (asdf:oos 'asdf:load-op :zeromq)
-(asdf:oos 'asdf:load-op :iolib.syscalls)
 
 (defpackage :zeromq-test
   (:use :cl))
@@ -28,7 +27,7 @@
 	(zmq:msg-init-size msg *message-size*)
 	(zmq:send s msg)
 	(zmq:msg-close msg))
-      (isys:usleep (round 10e6)))))
+      (sleep 1))))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)

@@ -31,12 +31,12 @@
 		 (format t "size ~d, ~a~%" (zmq:msg-size msg) (zmq:msg-data-as-array msg)))
 	     (zmq:error-again (c)
 	       (declare (ignore c))
-	       (isys:usleep (round (* 1e6 0.01)))
+	       (sleep 0.01)
 	       (go retry))))
 ;; blocking recv
         (zmq:recv s msg)
 	(zmq:send s msg)))
-    (isys:usleep (round 1e6))))
+    (sleep 1)))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)

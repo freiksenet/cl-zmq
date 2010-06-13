@@ -1,3 +1,5 @@
+(asdf:oos 'asdf:load-op :iolib.syscalls)
+
 (defmacro with-stopwatch (&body body)
   (let ((sec0 (gensym))
 	(sec1 (gensym))

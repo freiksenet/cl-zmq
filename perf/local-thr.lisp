@@ -9,7 +9,6 @@
 ;; known as the LLGPL.
 
 (asdf:oos 'asdf:load-op :zeromq)
-(asdf:oos 'asdf:load-op :iolib.syscalls)
 
 (defpackage :zeromq-test
   (:use :cl))

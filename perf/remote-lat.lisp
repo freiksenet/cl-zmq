@@ -30,7 +30,7 @@
 		(dotimes (i *roundtrip-count*)
 		  (zmq:send s msg)
 		  (zmq:recv s msg)))))
-    (isys:usleep (round 1e6))))
+    (sleep 1)))
 
 (setf *latency* (/ *elapsed* (* 2 *roundtrip-count*)))
 
