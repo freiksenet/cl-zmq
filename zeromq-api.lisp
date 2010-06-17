@@ -110,7 +110,9 @@ The string must be freed with FOREIGN-STRING-FREE."
   (let ((data (%msg-data (msg-raw msg))))
     (unless (zerop (pointer-address data))
       (let* ((len (msg-size msg))
-	     (arr (make-array len :element-type '(unsigned-byte 8))))
+	     (arr (#+lispworks sys:in-static-area
+		   #-lispworks cl:identity
+		   (make-array len :element-type '(unsigned-byte 8)))))
 	(declare (type (simple-array (unsigned-byte 8)) arr))
 	(with-pointer-to-vector-data (ptr arr)
 	  (memcpy ptr data len))
