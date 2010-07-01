@@ -50,6 +50,8 @@
    #:unsubscribe
    #:upstream
    #:vsm
+   #:xrep
+   #:xreq
 
    #:events
 
