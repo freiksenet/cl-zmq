@@ -192,6 +192,14 @@
 
 (defcfun ("zmq_errno" errno) :int)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Devices
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defconstant streamer 1)
+(defconstant forwarder 2)
+(defconstant queue 3)
+
 (defcfun* ("zmq_device" %device) :int
   (device	:int)
   (insocket	:pointer)

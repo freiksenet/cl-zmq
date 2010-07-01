@@ -196,4 +196,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 	    (mem-ref minor :int)
 	    (mem-ref patch :int))))
 
+(defun device (device insocket outsocket)
+  (%device device insocket outsocket))
+
 ;
