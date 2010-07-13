@@ -49,6 +49,6 @@
 		    (let ((errno (errno)))
 		      (cond
 			#-windows
-			((eq errno isys:eagain) (error 'error-again :argument errno))
+			((eq errno isys:ewouldblock) (error 'error-again :argument errno))
 			(t (error (convert-from-foreign (%strerror errno) :string)))))
 		,ret))))))))
