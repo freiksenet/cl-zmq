@@ -102,9 +102,10 @@ The string must be freed with FOREIGN-STRING-FREE."
   (%msg-data (msg-raw msg)))
 
 (defun msg-data-as-string (msg)
-  (let ((data (%msg-data (msg-raw msg))))
+  (let ((data (%msg-data (msg-raw msg)))
+        (size (%msg-size (msg-raw msg))))
     (unless (zerop (pointer-address data))
-      (convert-from-foreign data :string))))
+      (foreign-string-to-lisp data :count size))))
 
 (defun msg-data-as-array (msg)
   (let ((data (%msg-data (msg-raw msg))))
