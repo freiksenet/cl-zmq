@@ -11,25 +11,25 @@
 (in-package :zeromq)
 
 (defcfun ("memcpy" memcpy) :pointer
-  (dst	:pointer)
-  (src	:pointer)
-  (len	:long))
+  (dst  :pointer)
+  (src  :pointer)
+  (len  :long))
 
 ;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
 (defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
-                             (null-terminated-p t) (start 0) end)
+                                (null-terminated-p t) (start 0) end)
   "Allocate a foreign string containing Lisp string STRING.
 The string must be freed with FOREIGN-STRING-FREE."
   (check-type string string)
   (cffi::with-checked-simple-vector ((string (coerce string 'babel:unicode-string))
-				     (start start) (end end))
+                                     (start start) (end end))
     (declare (type simple-string string))
     (let* ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding))
            (count (funcall (cffi::octet-counter mapping) string start end 0))
            (length (if null-terminated-p
                        (+ count (cffi::null-terminator-len encoding))
                        count))
-	   (ptr (funcall alloc-fn length)))
+           (ptr (funcall alloc-fn length)))
       (funcall (cffi::encoder mapping) string start end ptr 0)
       (when null-terminated-p
         (dotimes (i (cffi::null-terminator-len encoding))
@@ -37,41 +37,41 @@ The string must be freed with FOREIGN-STRING-FREE."
       (values ptr length))))
 
 (defclass msg ()
-  ((raw		:accessor msg-raw :initform nil)))
+  ((raw         :accessor msg-raw :initform nil)))
 
 (defmethod initialize-instance :after ((inst msg) &key size data)
   (let ((obj (foreign-alloc 'msg)))
     (tg:finalize inst (lambda ()
-			(%msg-close obj)
-			(foreign-free obj)))
+                        (%msg-close obj)
+                        (foreign-free obj)))
     (cond (size (%msg-init-size obj size))
-	  (data
-	   (etypecase data
-	     (string (copy-lisp-string-octets
-		      data (lambda (sz)
-			     (%msg-init-size obj sz)
-			     (%msg-data obj))))
-	     ((simple-array (unsigned-byte 8))
-	      (let ((len (length data)))
-		(%msg-init-size obj len)
-		(with-pointer-to-vector-data (ptr data)
-		  (memcpy (%msg-data obj) ptr len))))
-	     (array (progn
-		      (%msg-init-size obj (length data))
-		      (let ((ptr (%msg-data obj))
-			    (i -1))
-			(map nil (lambda (x)
-				   (setf (mem-aref ptr :uchar (incf i)) x))
-			     data))))))
-	  (t (msg-init obj)))
+          (data
+           (etypecase data
+             (string (copy-lisp-string-octets
+                      data (lambda (sz)
+                             (%msg-init-size obj sz)
+                             (%msg-data obj))))
+             ((simple-array (unsigned-byte 8))
+              (let ((len (length data)))
+                (%msg-init-size obj len)
+                (with-pointer-to-vector-data (ptr data)
+                  (memcpy (%msg-data obj) ptr len))))
+             (array (progn
+                      (%msg-init-size obj (length data))
+                      (let ((ptr (%msg-data obj))
+                            (i -1))
+                        (map nil (lambda (x)
+                                   (setf (mem-aref ptr :uchar (incf i)) x))
+                             data))))))
+          (t (msg-init obj)))
     (setf (msg-raw inst) obj)))
 
 (defclass pollitem ()
-  ((raw		:accessor pollitem-raw :initform nil)
-   (socket	:accessor pollitem-socket :initform nil :initarg :socket)
-   (fd		:accessor pollitem-fd :initform -1 :initarg :fd)
-   (events	:accessor pollitem-events :initform 0 :initarg :events)
-   (revents	:accessor pollitem-revents :initform 0)))
+  ((raw         :accessor pollitem-raw :initform nil)
+   (socket      :accessor pollitem-socket :initform nil :initarg :socket)
+   (fd          :accessor pollitem-fd :initform -1 :initarg :fd)
+   (events      :accessor pollitem-events :initform 0 :initarg :events)
+   (revents     :accessor pollitem-revents :initform 0)))
 
 (defmethod initialize-instance :after ((inst pollitem) &key)
   (let ((obj (foreign-alloc 'pollitem)))
@@ -89,13 +89,13 @@ The string must be freed with FOREIGN-STRING-FREE."
 (defmacro with-context ((context io-threads) &body body)
   `(let ((,context (init ,io-threads)))
      (unwind-protect
-	  (progn ,@body)
+          (progn ,@body)
        (term ,context))))
 
 (defmacro with-socket ((socket context type) &body body)
   `(let ((,socket (socket ,context ,type)))
      (unwind-protect
-	  (progn ,@body)
+          (progn ,@body)
        (close ,socket))))
 
 (defun msg-data-as-is (msg)
@@ -111,13 +111,13 @@ The string must be freed with FOREIGN-STRING-FREE."
   (let ((data (%msg-data (msg-raw msg))))
     (unless (zerop (pointer-address data))
       (let* ((len (msg-size msg))
-	     (arr (#+lispworks sys:in-static-area
-		   #-lispworks cl:identity
-		   (make-array len :element-type '(unsigned-byte 8)))))
-	(declare (type (simple-array (unsigned-byte 8)) arr))
-	(with-pointer-to-vector-data (ptr arr)
-	  (memcpy ptr data len))
-	arr))))
+             (arr (#+lispworks sys:in-static-area
+                               #-lispworks cl:identity
+                               (make-array len :element-type '(unsigned-byte 8)))))
+        (declare (type (simple-array (unsigned-byte 8)) arr))
+        (with-pointer-to-vector-data (ptr arr)
+          (memcpy ptr data len))
+        arr))))
 
 (defun send (s msg &optional flags)
   (%send s (msg-raw msg) (or flags 0)))
@@ -143,16 +143,16 @@ The string must be freed with FOREIGN-STRING-FREE."
 (defun setsockopt (socket option value)
   (etypecase value
     (string (with-foreign-string (string value)
-	      (%setsockopt socket option string (length value))))
+              (%setsockopt socket option string (length value))))
     (integer (with-foreign-object (int :int64)
-	       (setf (mem-aref int :int64) value)
-	       (%setsockopt socket option int (foreign-type-size :int64))))))
+               (setf (mem-aref int :int64) value)
+               (%setsockopt socket option int (foreign-type-size :int64))))))
 
 (defun getsockopt (socket option)
   (with-foreign-objects ((opt :int64)
-			 (len :long))
+                         (len :long))
     (setf (mem-aref opt :int64) 0
-	  (mem-aref len :long) (foreign-type-size :int64))
+          (mem-aref len :long) (foreign-type-size :int64))
     (%getsockopt socket option opt len)
     (mem-aref opt :int64)))
 
@@ -160,44 +160,42 @@ The string must be freed with FOREIGN-STRING-FREE."
   (let ((len (length items)))
     (with-foreign-object (%items 'pollitem len)
       (dotimes (i len)
-	(let ((item (nth i items))
-	      (%item (mem-aref %items 'pollitem i)))
-	  (with-foreign-slots ((socket fd events revents) %item pollitem)
-	    (setf socket (pollitem-socket item)
-		  fd (pollitem-fd item)
-		  events (pollitem-events item)))))
+        (let ((item (nth i items))
+              (%item (mem-aref %items 'pollitem i)))
+          (with-foreign-slots ((socket fd events revents) %item pollitem)
+            (setf socket (pollitem-socket item)
+                  fd (pollitem-fd item)
+                  events (pollitem-events item)))))
       (let ((ret (%poll %items len timeout)))
-	(cond
-	  ((zerop ret) nil)
-	  ((plusp ret)
-	    (loop for i below len
-	       for revent = (foreign-slot-value (mem-aref %items 'pollitem i)
-						'pollitem
-						'revents)
-	       collect (setf (pollitem-revents (nth i items)) revent)))
-	  (t (error (convert-from-foreign (%strerror (errno)) :string))))))))
+        (cond
+          ((zerop ret) nil)
+          ((plusp ret)
+           (loop for i below len
+              for revent = (foreign-slot-value (mem-aref %items 'pollitem i)
+                                               'pollitem
+                                               'revents)
+              collect (setf (pollitem-revents (nth i items)) revent)))
+          (t (error (convert-from-foreign (%strerror (errno)) :string))))))))
 
 (defmacro with-polls (list &body body)
   `(let ,(loop for (name . polls) in list
-	    collect `(,name
-		      (list
-		       ,@(loop for (socket . events) in polls
-			    collect `(make-instance 'pollitem
-						    :socket ,socket
-						    :events ,events)))))
+            collect `(,name
+                      (list
+                       ,@(loop for (socket . events) in polls
+                            collect `(make-instance 'pollitem
+                                                    :socket ,socket
+                                                    :events ,events)))))
      ,@body))
 
 (defun version ()
   (with-foreign-objects ((major :int)
-			 (minor :int)
-			 (patch :int))
+                         (minor :int)
+                         (patch :int))
     (%version major minor patch)
     (format nil "~d.~d.~d"
-	    (mem-ref major :int)
-	    (mem-ref minor :int)
-	    (mem-ref patch :int))))
+            (mem-ref major :int)
+            (mem-ref minor :int)
+            (mem-ref patch :int))))
 
 (defun device (device insocket outsocket)
   (%device device insocket outsocket))
-
-;

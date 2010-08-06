@@ -26,10 +26,10 @@
     (zmq:connect s *address*)
     (let ((msg (make-instance 'zmq:msg :size *message-size*)))
       (setf *elapsed*
-	    (with-stopwatch
-		(dotimes (i *roundtrip-count*)
-		  (zmq:send s msg)
-		  (zmq:recv s msg)))))
+            (with-stopwatch
+                (dotimes (i *roundtrip-count*)
+                  (zmq:send s msg)
+                  (zmq:recv s msg)))))
     (sleep 1)))
 
 (setf *latency* (/ *elapsed* (* 2 *roundtrip-count*)))
@@ -42,4 +42,3 @@
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
 #+ccl (ccl:quit)
-;

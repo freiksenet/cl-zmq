@@ -30,11 +30,11 @@
     (let ((msg (make-instance 'zmq:msg)))
       (zmq:recv s msg)
       (setf *elapsed*
-	    (with-stopwatch
-	      (dotimes (i (1- *message-count*))
-		(zmq:recv s msg))))))
+            (with-stopwatch
+                (dotimes (i (1- *message-count*))
+                  (zmq:recv s msg))))))
   (setq *throughput* (* (/ *message-count* *elapsed*) 1e6)
-	*megabits* (/ (* *throughput* *message-count* 8) 1e6))
+        *megabits* (/ (* *throughput* *message-count* 8) 1e6))
 
   (format t "message size: ~d [B]~%" *message-size*)
   (format t "message count: ~d~%" *message-count*)
@@ -45,5 +45,3 @@
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
 #+ccl (ccl:quit)
-
-;

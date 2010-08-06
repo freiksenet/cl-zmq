@@ -22,15 +22,13 @@
     (zmq:bind s *address*)
     (let ((msg (make-instance 'zmq:msg)))
       (zmq:with-polls ((poll-in . ((s . zmq:pollin)))
-		       (poll-out . ((s . zmq:pollout))))
-	(dotimes (i *roundtrip-count*)
-	  (zmq:poll poll-in)
-	  (zmq:recv s msg zmq:noblock)
-	  (zmq:poll poll-out)
-	  (zmq:send s msg zmq:noblock))))))
+                       (poll-out . ((s . zmq:pollout))))
+        (dotimes (i *roundtrip-count*)
+          (zmq:poll poll-in)
+          (zmq:recv s msg zmq:noblock)
+          (zmq:poll poll-out)
+          (zmq:send s msg zmq:noblock))))))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
-
-;

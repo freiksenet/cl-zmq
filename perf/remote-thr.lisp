@@ -24,13 +24,12 @@
     (zmq:connect s *connect-address*)
     (let ((msg (make-instance 'zmq:msg)))
       (dotimes (i *message-count*)
-	(zmq:msg-init-size msg *message-size*)
-	(zmq:send s msg)
-	(zmq:msg-close msg))
+        (zmq:msg-init-size msg *message-size*)
+        (zmq:send s msg)
+        (zmq:msg-close msg))
       (sleep 1))))
 
 (tg:gc)
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
 #+ccl (ccl:quit)
-;

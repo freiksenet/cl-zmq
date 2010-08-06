@@ -13,19 +13,19 @@
 (define-condition error-again (error)
   ((argument :reader error-again :initarg :argument))
   (:report (lambda (condition stream)
-	     (write-string (convert-from-foreign
-			    (%strerror (error-again condition))
-			    :string)
-			   stream))))
+             (write-string (convert-from-foreign
+                            (%strerror (error-again condition))
+                            :string)
+                           stream))))
 
 (defmacro defcfun* (name-and-options return-type &body args)
   (let* ((c-name (car name-and-options))
-	 (l-name (cadr name-and-options))
-	 (n-name (cffi::format-symbol t "%~A" l-name))
-	 (name (list c-name n-name))
+         (l-name (cadr name-and-options))
+         (n-name (cffi::format-symbol t "%~A" l-name))
+         (name (list c-name n-name))
 
-	 (docstring (when (stringp (car args)) (pop args)))
-	 (ret (gensym)))
+         (docstring (when (stringp (car args)) (pop args)))
+         (ret (gensym)))
     (loop with opt
        for i in args
        unless (consp i) do (setq opt t)
@@ -36,19 +36,19 @@
        and collect (list (car i) 0) into opts-init
        end
        finally (return
-	 `(progn
-	    (defcfun ,name ,return-type
-	      ,@args*)
+                 `(progn
+                    (defcfun ,name ,return-type
+                      ,@args*)
 
-	    (defun ,l-name (,@names ,@(when opts-init `(&optional ,@opts-init)))
-	      ,docstring
-	      (let ((,ret (,n-name ,@names ,@opts)))
-		(if ,(if (eq return-type :pointer)
-			   `(zerop (pointer-address ,ret))
-			   `(not (zerop ,ret)))
-		    (let ((errno (errno)))
-		      (cond
-			#-windows
-			((eq errno isys:ewouldblock) (error 'error-again :argument errno))
-			(t (error (convert-from-foreign (%strerror errno) :string)))))
-		,ret))))))))
+                    (defun ,l-name (,@names ,@(when opts-init `(&optional ,@opts-init)))
+                      ,docstring
+                      (let ((,ret (,n-name ,@names ,@opts)))
+                        (if ,(if (eq return-type :pointer)
+                                 `(zerop (pointer-address ,ret))
+                                 `(not (zerop ,ret)))
+                            (let ((errno (errno)))
+                              (cond
+                                #-windows
+                                ((eq errno isys:ewouldblock) (error 'error-again :argument errno))
+                                (t (error (convert-from-foreign (%strerror errno) :string)))))
+                            ,ret))))))))
