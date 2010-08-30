@@ -32,3 +32,4 @@
 (tg:gc)
 #+sbcl (sb-ext:quit)
 #+clisp (ext:quit)
+#+ecl (ext:quit)
