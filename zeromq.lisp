@@ -103,8 +103,10 @@
 (defconstant rep 4)
 (defconstant xreq 5)
 (defconstant xrep 6)
-(defconstant upstream 7)
-(defconstant downstream 8)
+(defconstant pull 7)
+(defconstant push 8)
+(defconstant upstream pull)
+(defconstant downstream push)
 
 (defconstant hwm 1)
 (defconstant swap 3)

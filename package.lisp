@@ -35,6 +35,8 @@
    #:pollin
    #:pollout
    #:pub
+   #:pull
+   #:push
    #:queue
    #:rate
    #:raw
