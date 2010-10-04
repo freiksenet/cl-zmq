@@ -17,7 +17,7 @@
 
 ;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
 (defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
-                                (null-terminated-p t) (start 0) end)
+                                null-terminated-p (start 0) end)
   "Allocate a foreign string containing Lisp string STRING.
 The string must be freed with FOREIGN-STRING-FREE."
   (check-type string string)
@@ -39,7 +39,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 (defclass msg ()
   ((raw         :accessor msg-raw :initform nil)))
 
-(defmethod initialize-instance :after ((inst msg) &key size data)
+(defmethod initialize-instance :after ((inst msg) &key size data null-terminated-p)
   (let ((obj (foreign-alloc 'msg)))
     (tg:finalize inst (lambda ()
                         (%msg-close obj)
@@ -50,7 +50,8 @@ The string must be freed with FOREIGN-STRING-FREE."
              (string (copy-lisp-string-octets
                       data (lambda (sz)
                              (%msg-init-size obj sz)
-                             (%msg-data obj))))
+                             (%msg-data obj))
+                      :null-terminated-p null-terminated-p))
              ((simple-array (unsigned-byte 8))
               (let ((len (length data)))
                 (%msg-init-size obj len)
