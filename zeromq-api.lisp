@@ -17,7 +17,7 @@
 
 ;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
 (defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
-                                null-terminated-p (start 0) end)
+                                (start 0) end)
   "Allocate a foreign string containing Lisp string STRING.
 The string must be freed with FOREIGN-STRING-FREE."
   (check-type string string)
@@ -26,20 +26,14 @@ The string must be freed with FOREIGN-STRING-FREE."
     (declare (type simple-string string))
     (let* ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding))
            (count (funcall (cffi::octet-counter mapping) string start end 0))
-           (length (if null-terminated-p
-                       (+ count (cffi::null-terminator-len encoding))
-                       count))
-           (ptr (funcall alloc-fn length)))
+           (ptr (funcall alloc-fn count)))
       (funcall (cffi::encoder mapping) string start end ptr 0)
-      (when null-terminated-p
-        (dotimes (i (cffi::null-terminator-len encoding))
-          (setf (mem-ref ptr :char (+ count i)) 0)))
-      (values ptr length))))
+      (values ptr count))))
 
 (defclass msg ()
   ((raw         :accessor msg-raw :initform nil)))
 
-(defmethod initialize-instance :after ((inst msg) &key size data null-terminated-p)
+(defmethod initialize-instance :after ((inst msg) &key size data)
   (let ((obj (foreign-alloc 'msg)))
     (tg:finalize inst (lambda ()
                         (%msg-close obj)
@@ -50,8 +44,7 @@ The string must be freed with FOREIGN-STRING-FREE."
              (string (copy-lisp-string-octets
                       data (lambda (sz)
                              (%msg-init-size obj sz)
-                             (%msg-data obj))
-                      :null-terminated-p null-terminated-p))
+                             (%msg-data obj))))
              ((simple-array (unsigned-byte 8))
               (let ((len (length data)))
                 (%msg-init-size obj len)

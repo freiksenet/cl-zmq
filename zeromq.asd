@@ -10,7 +10,7 @@
 
 (asdf:defsystem zeromq
   :name "zeromq"
-  :version "0.1.3"
+  :version "0.1.4"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
   :licence "LGPLv3"
   :description "Zero MQ 2 bindings"
