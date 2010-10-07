@@ -96,7 +96,7 @@
 ;;  0MQ socket definition.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant p2p 0)
+(defconstant pair 0)
 (defconstant pub 1)
 (defconstant sub 2)
 (defconstant req 3)

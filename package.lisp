@@ -29,7 +29,7 @@
    #:msg-shared
    #:msg-tbc
    #:noblock
-   #:p2p
+   #:pair
    #:poll
    #:pollerr
    #:pollin
