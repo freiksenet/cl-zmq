@@ -62,7 +62,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 
 (defclass pollitem ()
   ((raw         :accessor pollitem-raw :initform nil)
-   (socket      :accessor pollitem-socket :initform nil :initarg :socket)
+   (socket      :accessor pollitem-socket :initform (cffi:null-pointer) :initarg :socket)
    (fd          :accessor pollitem-fd :initform -1 :initarg :fd)
    (events      :accessor pollitem-events :initform 0 :initarg :events)
    (revents     :accessor pollitem-revents :initform 0)))
