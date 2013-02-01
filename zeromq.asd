@@ -8,9 +8,9 @@
 ;; (http://opensource.franz.com/preamble.html),
 ;; known as the LLGPL.
 
-(asdf:defsystem zeromq3
+(asdf:defsystem zeromq
   :name "zeromq"
-  :version "0.1.6"
+  :version "0.2.0"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
   :licence "LGPLv3"
   :description "Zero MQ 3 bindings"
