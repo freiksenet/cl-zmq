@@ -21,10 +21,8 @@
    #:emthread
    #:enocompatproto
    #:forwarder
-   #:hausnumero
    #:hwm
    #:identity
-   #:max-vsm-size
    #:mcast-loop
    #:msg-shared
    #:msg-tbc
@@ -52,7 +50,9 @@
    #:unsubscribe
    #:upstream
    #:vsm
+   #:dealer
    #:xrep
+   #:router
    #:xreq
 
    #:events
@@ -62,37 +62,37 @@
    #:pollitem
 
    ;; functions
-   #:bind
-   #:close
-   #:connect
-   #:device
-   #:errno
-   #:getsockopt
-   #:init
-   #:msg-close
-   #:msg-copy
-   #:msg-data-as-array
-   #:msg-data-as-is
-   #:msg-data-as-string
-   #:msg-init
-   #:msg-init-data
-   #:msg-init-size
-   #:msg-move
-   #:msg-raw
-   #:msg-size
-   #:msg-type
-   #:pollitem-events
-   #:pollitem-fd
-   #:pollitem-raw
-   #:pollitem-revents
-   #:pollitem-socket
-   #:recv
-   #:send
-   #:setsockopt
-   #:socket
-   #:strerror
-   #:term
    #:version
+
+   #:ctx-new
+   #:ctx-destroy
+
+   #:socket
+   #:close
+   #:bind
+   #:unbind
+   #:connect
+   #:disconnect
+   #:getsockopt
+   #:setsockopt
+
+   #:msg-data-as-is
+   #:msg-data-as-array
+   #:msg-data-as-string
+   #:msg-close
+   #:msg-init-size
+   #:msg-size
+   #:msg-move
+   #:msg-copy
+
+   #:send
+   #:recv
+   #:msg-send
+   #:msg-recv
+
+   #:poll
+
+   #:proxy
 
    ;; macros
    #:with-context
@@ -100,7 +100,7 @@
    #:with-socket
 
    ;; conditions
-   #:error-again))
+   #:zmq-error))
 
 (in-package :zeromq)
 

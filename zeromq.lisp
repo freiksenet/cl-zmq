@@ -11,102 +11,78 @@
 (in-package :zeromq)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ basics
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcfun ("memcpy" %memcpy) :pointer
+  (dst :pointer)
+  (src :pointer)
+  (len :long))
+
+(defcfun ("zmq_version" %version) :void
+  (major :pointer)
+  (minor :pointer)
+  (patch :pointer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ errors.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant hausnumero 156384712)
-
-;;  Native 0MQ error codes.
-(defconstant emthread (+ hausnumero 50))
-(defconstant efsm (+ hausnumero 51))
-(defconstant enocompatproto (+ hausnumero 52))
+(defcfun ("zmq_errno" %errno) :int)
 
 (defcfun ("zmq_strerror" %strerror) :pointer
-  (errnum       :int))
+  (errnum :int))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  0MQ message definition.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ data structures
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant max-vsm-size 30)
+(defctype c-context :pointer)
 
-;;  Message types. These integers may be stored in 'content' member of the
-;;  message instead of regular pointer to the data.
-(defconstant delimiter 31)
-(defconstant vsm 32)
+(defctype c-socket :pointer)
 
-;; Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
-;; (it has no equivalent in the wire format), however, making  it a flag
-;; allows us to pack the stucture tigher and thus improve performance.
-(defconstant msg-more 1)
-(defconstant msg-shared 128)
+(defcstruct c-msg
+  (_ :uchar :count 32))
 
-(defcstruct (msg)
-  (content      :pointer)
-  (shared       :uchar)
-  (vsm-size     :uchar)
-  (vsm-data     :uchar :count 30))      ;; FIXME max-vsm-size
+(defcstruct c-pollitem
+  (socket c-socket)
+  (fd :int)
+  (events :short)
+  (revents :short))
 
-(defcfun ("zmq_msg_init" msg-init) :int
-  (msg  msg))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ contexts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcfun* ("zmq_msg_init_size" %msg-init-size) :int
-  (msg  msg)
-  (size :long))
+(defcfun ("zmq_ctx_new" ctx-new) c-context)
 
-(defcallback zmq-free :void ((ptr :pointer) (hint :pointer))
-  (declare (ignorable hint))
-  (foreign-free ptr))
+(defcfun ("zmq_ctx_get" %ctx-get) :int
+  (context c-context)
+  (option-name :int))
 
-(defcfun ("zmq_msg_init_data" msg-init-data) :int
-  (msg  msg)
-  (data :pointer)
-  (size :long)
-  (ffn  :pointer)                       ; zmq_free_fn
-  (hint :pointer))
+(defcfun ("zmq_ctx_set" %ctx-set) :int
+  (context c-context)
+  (option-name :int)
+  (option-value :int))
 
-(defcfun* ("zmq_msg_close" %msg-close) :int
-  (msg  msg))
+(defcfun ("zmq_ctx_destroy" ctx-destroy) :int
+  (context c-context))
 
-(defcfun ("zmq_msg_move" %msg-move) :int
-  (dest msg)
-  (src  msg))
-
-(defcfun ("zmq_msg_copy" %msg-copy) :int
-  (dest msg)
-  (src  msg))
-
-(defcfun ("zmq_msg_data" %msg-data) :pointer
-  (msg  msg))
-
-(defcfun ("zmq_msg_size" %msg-size) :int
-  (msg  msg))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  0MQ infrastructure (a.k.a. context) initialisation & termination.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcfun* ("zmq_init" init) :pointer
-  (io-threads   :int))
-
-(defcfun ("zmq_term" term) :int
-  (context      :pointer))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  0MQ socket definition.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ sockets
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconstant pair 0)
 (defconstant pub 1)
 (defconstant sub 2)
 (defconstant req 3)
 (defconstant rep 4)
-(defconstant xreq 5)
-(defconstant xrep 6)
+(defconstant dealer 5)
+(defconstant xreq dealer)
+(defconstant router 6)
+(defconstant xrep router)
 (defconstant pull 7)
 (defconstant push 8)
-(defconstant upstream pull)
-(defconstant downstream push)
 
 (defconstant hwm 1)
 (defconstant swap 3)
@@ -124,85 +100,147 @@
 (defconstant noblock 1)
 (defconstant sndmore 2)
 
-(defcfun* ("zmq_socket" socket) :pointer
-  (context      :pointer)
-  (type         :int))
+(defcfun ("zmq_socket" socket) c-socket
+  (context c-context)
+  (type :int))
 
 (defcfun ("zmq_close" close) :int
-  (s    :pointer))
+  (socket c-socket))
 
-(defcfun* ("zmq_setsockopt" %setsockopt) :int
-  (s            :pointer)
-  (option       :int)
-  (optval       :pointer)
-  (optvallen    :long))
+(defcfun ("zmq_getsockopt" %getsockopt) :int
+  (socket c-socket)
+  (option-name :int)
+  (option-value :pointer)
+  (option-len :pointer))
 
-(defcfun* ("zmq_getsockopt" %getsockopt) :int
-  (s            :pointer)
-  (option       :int)
-  (optval       :pointer)
-  (optvallen    :pointer))
+(defcfun ("zmq_setsockopt" %setsockopt) :int
+  (socket c-socket)
+  (option-name :int)
+  (option-value :pointer)
+  (optvallen :long))
 
-(defcfun* ("zmq_bind" %bind) :int
-  (s    :pointer)
-  (addr :pointer :char))
+(defcfun ("zmq_bind" %bind) :int
+  (socket c-socket)
+  (endpoint :pointer :char))
 
-(defcfun* ("zmq_connect" %connect) :int
-  (s    :pointer)
-  (addr :pointer :char))
+(defcfun ("zmq_unbind" %unbind) :int
+  (socket c-socket)
+  (endpoint :pointer :char))
 
+(defcfun ("zmq_connect" %connect) :int
+  (socket c-socket)
+  (endpoint :pointer :char))
 
-(defcfun* ("zmq_send" %send) :int
-  (s            :pointer)
-  (msg          msg)
-  :optional
-  (flags        :int))
-
-(defcfun* ("zmq_recv" %recv) :int
-  (s            :pointer)
-  (msg          msg)
-  :optional
-  (flags        :int))
+(defcfun ("zmq_disconnect" %disconnect) :int
+  (socket c-socket)
+  (endpoint :pointer :char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  I/O multiplexing.
+;;  0MQ message definition.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcfun ("zmq_msg_init" %msg-init) :int
+  (msg :pointer))
+
+(defcfun ("zmq_msg_init_size" %msg-init-size) :int
+  (msg c-msg)
+  (size :long))
+
+;; This currently won't work properly for the reasons defined here
+;; http://13-49.blogspot.fi/2010/06/why-zero-copy-is-missing-in-cl-zmq.html
+;; Don't use it unless you know what you are doing.
+(defcallback zmq-free :void ((ptr :pointer) (hint :pointer))
+  (declare (ignorable hint))
+  (foreign-free ptr))
+
+(defcfun ("zmq_msg_init_data" %%msg-init-data) :int
+  (msg c-msg)
+  (data :pointer)
+  (size :long)
+  (ffn :pointer)
+  (hint :pointer))
+
+(defun %zmq-init-data (msg data size)
+  (%%msg-init-data msg data size 'zmq-free))
+;; End of non-functional code
+
+(defcfun ("zmq_msg_close" %msg-close) :int
+  (msg c-msg))
+
+(defcfun ("zmq_msg_move" %msg-move) :int
+  (dest c-msg)
+  (src c-msg))
+
+(defcfun ("zmq_msg_copy" %msg-copy) :int
+  (dest c-msg)
+  (src c-msg))
+
+(defcfun ("zmq_msg_data" %msg-data) :pointer
+  (msg c-msg))
+
+(defcfun ("zmq_msg_size" %msg-size) :int
+  (msg c-msg))
+
+(defcfun ("zmq_msg_get" %msg-get) :int
+  (msg c-msg)
+  (property :int))
+
+(defcfun ("zmq_msg_set" %msg-set) :int
+  (msg c-msg)
+  (property :int)
+  (value :int))
+
+(defcfun ("zmq_msg_more" %msg-more) :int
+  (msg c-msg))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ send/recieve
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defcfun ("zmq_send" %send) :int
+  (socket c-socket)
+  (data :pointer)
+  (size :long)
+  (flags :int))
+
+(defcfun ("zmq_recv" %recv) :int
+  (socket c-socket)
+  (data :pointer)
+  (size :long)
+  (flags :int))
+
+(defcfun ("zmq_msg_send" %msg-send) :int
+  (msg c-msg)
+  (socket c-socket)
+  (flags :int))
+
+(defcfun ("zmq_msg_recv" %msg-recv) :int
+  (msg c-msg)
+  (socket c-socket)
+  (flags :int))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  0MQ polling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconstant pollin 1)
 (defconstant pollout 2)
 (defconstant pollerr 4)
 
-(defcstruct pollitem
-  (socket       :pointer)
-  (fd           :int)
-  (events       :short)
-  (revents      :short))
-
 (defcfun ("zmq_poll" %poll) :int
-  (items        :pointer)
-  (nitems       :int)
-  (timeout      :long))
+  (items :pointer)
+  (nitems :int)
+  (timeout :long))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Helper functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defcfun ("zmq_version" %version) :void
-  (major        :pointer)
-  (minor        :pointer)
-  (patch        :pointer))
-
-(defcfun ("zmq_errno" errno) :int)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Devices
+;;  0MQ proxy
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defconstant streamer 1)
 (defconstant forwarder 2)
 (defconstant queue 3)
 
-(defcfun* ("zmq_device" %device) :int
-  (device       :int)
-  (insocket     :pointer)
-  (outsocket    :pointer))
+(defcfun ("zmq_proxy" proxy) :int
+  (frontend :pointer)
+  (backend :pointer)
+  (capture :pointer))

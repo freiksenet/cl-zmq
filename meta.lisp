@@ -10,45 +10,45 @@
 
 (in-package :zeromq)
 
-(define-condition error-again (error)
-  ((argument :reader error-again :initarg :argument))
+(define-condition zmq-error (error)
+  ((code :reader error-code :initarg :code)
+   (description :reader error-description :initarg :description))
   (:report (lambda (condition stream)
-             (write-string (convert-from-foreign
-                            (%strerror (error-again condition))
-                            :string)
-                           stream))))
+             (format stream "ZMQ Error ~A - ~A."
+                     (error-code condition)
+                     (error-description condition)))))
 
-(defmacro defcfun* (name-and-options return-type &body args)
-  (let* ((c-name (car name-and-options))
-         (l-name (cadr name-and-options))
-         (n-name (cffi::format-symbol t "%~A" l-name))
-         (name (list c-name n-name))
+(defun call-with-error-check (function args &key (type :int) error-p)
+  (let ((error-p (or error-p
+                     (if (eq type :int)
+                         #'minusp
+                         #'null-pointer-p)))
+        (ret (apply function args)))
+    (if (funcall error-p ret)
+        (let* ((error-code (%errno))
+               (error-description
+                 (convert-from-foreign (%strerror error-code))))
+          (make-condition zmq-error
+                          :code error-code
+                          :description description))
+        ret)))
 
-         (docstring (when (stringp (car args)) (pop args)))
-         (ret (gensym)))
-    (loop with opt
-       for i in args
-       unless (consp i) do (setq opt t)
-       else
-       collect i into args*
-       and if (not opt) collect (car i) into names
-       else collect (car i) into opts
-       and collect (list (car i) 0) into opts-init
-       end
-       finally (return
-                 `(progn
-                    (defcfun ,name ,return-type
-                      ,@args*)
-
-                    (defun ,l-name (,@names ,@(when opts-init `(&optional ,@opts-init)))
-                      ,docstring
-                      (let ((,ret (,n-name ,@names ,@opts)))
-                        (if ,(if (eq return-type :pointer)
-                                 `(zerop (pointer-address ,ret))
-                                 `(not (zerop ,ret)))
-                            (let ((errno (errno)))
-                              (cond
-                                #-windows
-                                ((eq errno isys:ewouldblock) (error 'error-again :argument errno))
-                                (t (error (convert-from-foreign (%strerror errno) :string)))))
-                            ,ret))))))))
+;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
+(defun copy-lisp-string-octets (string alloc-fn
+                                &key
+                                  (encoding cffi::*default-foreign-encoding*)
+                                  (start 0) end)
+  "Allocate a foreign string containing Lisp string STRING.
+The string must be freed with FOREIGN-STRING-FREE."
+  (check-type string string)
+  (cffi::with-checked-simple-vector ((string
+                                      (coerce string 'babel:unicode-string))
+                                     (start start) (end end))
+    (declare (type simple-string string))
+    (let* ((mapping (cffi::lookup-mapping
+                     cffi::*foreign-string-mappings*
+                     encoding))
+           (count (funcall (cffi::octet-counter mapping) string start end 0))
+           (ptr (funcall alloc-fn count)))
+      (funcall (cffi::encoder mapping) string start end ptr 0)
+      (values ptr count))))
