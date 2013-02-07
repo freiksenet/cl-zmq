@@ -79,7 +79,7 @@
         (option-code (foreign-enum-value 'socket-options option)))
     (if (eq return-type :string)
         (with-foreign-objects ((str :char 255)
-                              (len 'size-t))
+                               (len 'size-t))
           (setf (mem-aref len 'size-t) (* (foreign-type-size :char) 255))
           (%getsockopt socket option-code str len)
            (foreign-string-to-lisp str :count (mem-aref len 'size-t)))
