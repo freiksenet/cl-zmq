@@ -82,7 +82,7 @@
                                (len 'size-t))
           (setf (mem-aref len 'size-t) (* (foreign-type-size :char) 255))
           (%getsockopt socket option-code str len)
-           (foreign-string-to-lisp str :count (mem-aref len 'size-t)))
+          (foreign-string-to-lisp str :count (mem-aref len 'size-t)))
         (with-foreign-objects ((obj return-type)
                                (len 'size-t))
           (setf (mem-aref len 'size-t) (foreign-type-size return-type))
