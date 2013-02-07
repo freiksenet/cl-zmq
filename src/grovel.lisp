@@ -1,3 +1,5 @@
+;; This file is part of CL-ZMQ.
+
 (include "zmq.h")
 #+win32 (include "Winsock2.h")
 
