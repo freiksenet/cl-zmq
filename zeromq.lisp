@@ -72,34 +72,6 @@
 ;;  0MQ sockets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant pair 0)
-(defconstant pub 1)
-(defconstant sub 2)
-(defconstant req 3)
-(defconstant rep 4)
-(defconstant dealer 5)
-(defconstant xreq dealer)
-(defconstant router 6)
-(defconstant xrep router)
-(defconstant pull 7)
-(defconstant push 8)
-
-(defconstant hwm 1)
-(defconstant swap 3)
-(defconstant affinity 4)
-(defconstant identity 5)
-(defconstant subscribe 6)
-(defconstant unsubscribe 7)
-(defconstant rate 8)
-(defconstant recovery-ivl 9)
-(defconstant mcast-loop 10)
-(defconstant sndbuf 11)
-(defconstant rcvbuf 12)
-(defconstant rcvmore 13)
-
-(defconstant noblock 1)
-(defconstant sndmore 2)
-
 (defcfun ("zmq_socket" socket) c-socket
   (context c-context)
   (type :int))
@@ -223,10 +195,6 @@
 ;;  0MQ polling
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconstant pollin 1)
-(defconstant pollout 2)
-(defconstant pollerr 4)
-
 (defcfun ("zmq_poll" %poll) :int
   (items :pointer)
   (nitems :int)
@@ -235,10 +203,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  0MQ proxy
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defconstant streamer 1)
-(defconstant forwarder 2)
-(defconstant queue 3)
 
 (defcfun ("zmq_proxy" proxy) :int
   (frontend :pointer)

@@ -8,15 +8,19 @@
 ;; (http://opensource.franz.com/preamble.html),
 ;; known as the LLGPL.
 
+(cl:eval-when (:load-toplevel :execute)
+  (asdf:operate 'asdf:load-op 'cffi-grovel))
+
 (asdf:defsystem zeromq
   :name "zeromq"
   :version "0.2.0"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
   :licence "LGPLv3"
   :description "Zero MQ 3 bindings"
-  :depends-on (:cffi :trivial-garbage #-(or win32 windows) :iolib.syscalls)
+  :depends-on (:cffi :trivial-garbage)
   :serial t
   :components ((:file "package")
+               (cffi-grovel:grovel-file "grovel")
                (:file "meta")
                (:file "zeromq")
                (:file "zeromq-api")))
