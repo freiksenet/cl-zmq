@@ -64,7 +64,7 @@
 ;;  0MQ sockets
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcfun ("zmq_socket" socket) c-socket
+(defcfun ("zmq_socket" %socket) c-socket
   (context c-context)
   (type :int))
 

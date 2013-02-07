@@ -9,7 +9,7 @@
 
 #+win32 (ctype win32-socket "SOCKET")
 
-(constantenum error-code
+(constantenum error-codes
               ;; Standard error codes
               ((:enotsup "ENOTSUP"))
               ((:eprotonosupport "EPROTONOSUPPORT"))
@@ -45,7 +45,7 @@
               ((:io-threads "ZMQ_IO_THREADS"))
               ((:max-sockets "ZMQ_MAX_SOCKETS")))
 
-(constantenum socket-type
+(constantenum socket-types
               ((:pair "ZMQ_PAIR"))
               ((:pub "ZMQ_PUB"))
               ((:sub "ZMQ_SUB"))
@@ -58,7 +58,7 @@
               ((:xpub "ZMQ_XPUB"))
               ((:xsub "ZMQ_XSUB")))
 
-(constantenum socket-option
+(constantenum socket-options
               ((:affinity "ZMQ_AFFINITY"))
               ((:identity "ZMQ_IDENTITY"))
               ((:subscribe "ZMQ_SUBSCRIBE"))
@@ -100,7 +100,7 @@
 (bitfield message-options
           ((:noblock "ZMQ_MORE")))
 
-(bitfield send-options
+(bitfield send-recv-options
           ((:noblock "ZMQ_DONTWAIT"))
           ((:sndmore "ZMQ_SNDMORE")))
 
@@ -115,8 +115,3 @@
           ((:event-closed "ZMQ_EVENT_CLOSED"))
           ((:event-close-failed "ZMQ_EVENT_CLOSE_FAILED"))
           ((:event-disconnected "ZMQ_EVENT_DISCONNECTED")))
-
-(constantenum proxy-type
-              ((:queue "ZMQ_QUEUE"))
-              ((:forwarder "ZMQ_FORWARDER"))
-              ((:streamer "ZMQ_STREAMER")))

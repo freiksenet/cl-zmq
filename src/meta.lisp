@@ -44,3 +44,7 @@ The string must be freed with FOREIGN-STRING-FREE."
            (ptr (funcall alloc-fn count)))
       (funcall (cffi::encoder mapping) string start end ptr 0)
       (values ptr count))))
+
+(defmacro with-zmq-string (args &body body)
+  `(with-foreign-string (,@args :null-terminated-p '())
+     ,@body))

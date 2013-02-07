@@ -22,7 +22,24 @@
           (progn ,@body)
        (ctx-destroy ,context))))
 
+(defun ctx-get (context option)
+  (%ctx-get context
+            (foreign-enum-value
+             'context-options
+             option)))
+
+(defun ctx-set (context option value)
+  (%ctx-set context
+            (foreign-enum-value
+             'context-options
+             option)
+            value))
+
 ;; Sockets
+
+(defun socket (context type)
+  (%socket context
+           (foreign-enum-value 'socket-types type)))
 
 (defmacro with-socket ((socket context type) &body body)
   `(let ((,socket (socket ,context ,type)))
@@ -46,21 +63,42 @@
   (with-foreign-string (addr address)
     (call-with-error-check #'%connect (list s addr))))
 
-(defun setsockopt (socket option value)
-  (etypecase value
-    (string (with-foreign-string (string value)
-              (%setsockopt socket option string (length value))))
-    (integer (with-foreign-object (int :int64)
-               (setf (mem-aref int :int64) value)
-               (%setsockopt socket option int (foreign-type-size :int64))))))
+(defun get-socket-option-value-type (option)
+  (case option
+    ((:affinity) :uint64)
+    ((:subscribe
+      :unsubscribe
+      :identity
+      :tcp-accept-filter
+      :last-endpoint) :string)
+    ((:maxmsgsize) :int64)
+    (otherwise :int)))
 
 (defun getsockopt (socket option)
-  (with-foreign-objects ((opt :int64)
-                         (len :long))
-    (setf (mem-aref opt :int64) 0
-          (mem-aref len :long) (foreign-type-size :int64))
-    (%getsockopt socket option opt len)
-    (mem-aref opt :int64)))
+  (let ((return-type (get-socket-option-value-type option))
+        (option-code (foreign-enum-value 'socket-options option)))
+    (if (eq return-type :string)
+        (with-foreign-objects ((str :char 255)
+                              (len 'size-t))
+          (setf (mem-aref len 'size-t) (* (foreign-type-size :char) 255))
+          (%getsockopt socket option-code str len)
+           (foreign-string-to-lisp str :count (mem-aref len 'size-t)))
+        (with-foreign-objects ((obj return-type)
+                               (len 'size-t))
+          (setf (mem-aref len 'size-t) (foreign-type-size return-type))
+          (%getsockopt socket option-code obj len)
+          (mem-aref obj return-type)))))
+
+(defun setsockopt (socket option value)
+  (let ((return-type (get-socket-option-value-type option))
+        (option-code (foreign-enum-value 'socket-options option)))
+    (if (eq return-type :string)
+        (with-zmq-string ((string len) value)
+          (%setsockopt socket option-code string len))
+        (with-foreign-object (obj return-type)
+          (setf (mem-aref obj return-type) value)
+          (%setsockopt socket option-code obj
+                       (foreign-type-size return-type))))))
 
 ;; Messages
 
@@ -134,19 +172,24 @@
 
 ;; Sending and recieving
 
-(defun send (s data &optional (flags 0))
+(defun send (s data &rest flags)
   (with-foreign-string ((buf len) data)
-    (%send s buf (1- len) flags)))
+    (%send s buf (1- len)
+           (foreign-bitfield-value 'send-options flags))))
 
-(defun recv (s data length &optional flags)
+(defun recv (s length &rest flags)
   (with-foreign-string ((buf len) (make-string length))
-    (%recv s buf (1- len) flags)))
+    (%recv s buf (1- len)
+           (foreign-bitfield-value 'send-options flags))
+    (foreign-string-to-lisp buf)))
 
-(defun msg-send (s msg &optional flags)
-  (%msg-send (msg-raw msg) s (or flags 0)))
+(defun msg-send (s msg &rest flags)
+  (%msg-send (msg-raw msg) s
+             (foreign-bitfield-value 'send-options flags)))
 
-(defun msg-recv (s msg &optional flags)
-  (%msg-recv (msg-raw msg) s (or flags 0)))
+(defun msg-recv (s msg &rest flags)
+  (%msg-recv (msg-raw msg) s
+             (foreign-bitfield-value 'send-options flags)))
 
 ;; Polls
 
