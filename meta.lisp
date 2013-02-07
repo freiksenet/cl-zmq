@@ -27,10 +27,10 @@
     (if (funcall error-p ret)
         (let* ((error-code (%errno))
                (error-description
-                 (convert-from-foreign (%strerror error-code))))
-          (make-condition zmq-error
+                 (convert-from-foreign (%strerror error-code) :uint)))
+          (make-condition 'zmq-error
                           :code error-code
-                          :description description))
+                          :description error-description))
         ret)))
 
 ;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
