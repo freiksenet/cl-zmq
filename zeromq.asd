@@ -19,8 +19,12 @@
   :description "Zero MQ 3 bindings"
   :depends-on (:cffi :trivial-garbage)
   :serial t
-  :components ((:file "package")
-               (cffi-grovel:grovel-file "grovel")
-               (:file "meta")
-               (:file "zeromq")
-               (:file "zeromq-api")))
+  :components
+  ((:module "src"
+    :serial t
+    :components
+    ((:file "package")
+     (cffi-grovel:grovel-file "grovel")
+     (:file "meta")
+     (:file "zeromq")
+     (:file "zeromq-api")))))
