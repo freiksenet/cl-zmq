@@ -57,6 +57,8 @@
    #:version
 
    #:ctx-new
+   #:ctx-get
+   #:ctx-set
    #:ctx-destroy
 
    #:socket
