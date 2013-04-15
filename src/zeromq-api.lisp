@@ -53,7 +53,7 @@
 
 (defun unbind (s address)
   (with-foreign-string (addr address)
-    (call-with-error-check #'unbind (list s addr))))
+    (call-with-error-check #'%unbind (list s addr))))
 
 (defun connect (s address)
   (with-foreign-string (addr address)
