@@ -22,18 +22,36 @@
           (progn ,@body)
        (ctx-destroy ,context))))
 
+(defun ctx-new ()
+  (call-with-error-check
+   #'%ctx-new '()
+   :type :pointer))
+
 (defun ctx-get (context option)
-  (%ctx-get context
-            (foreign-enum-value
-             'context-options
-             option)))
+  (call-with-error-check
+   #'%ctx-get
+   (list context
+         (or (foreign-enum-value
+              'context-options
+              option
+              :errorp nil)
+             -1))))
 
 (defun ctx-set (context option value)
-  (%ctx-set context
-            (foreign-enum-value
-             'context-options
-             option)
-            value))
+  (call-with-error-check
+   #'%ctx-set
+   (list context
+         (or (foreign-enum-value
+              'context-options
+              option
+              :errorp nil)
+             -1)
+         value)))
+
+(defun ctx-destroy (context)
+  (call-with-error-check
+   #'%ctx-destroy
+   (list context)))
 
 ;; Sockets
 

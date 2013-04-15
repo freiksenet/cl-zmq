@@ -46,7 +46,7 @@
 ;;  0MQ contexts
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defcfun ("zmq_ctx_new" ctx-new) c-context)
+(defcfun ("zmq_ctx_new" %ctx-new) c-context)
 
 (defcfun ("zmq_ctx_get" %ctx-get) :int
   (context c-context)
@@ -57,7 +57,7 @@
   (option-name :int)
   (option-value :int))
 
-(defcfun ("zmq_ctx_destroy" ctx-destroy) :int
+(defcfun ("zmq_ctx_destroy" %ctx-destroy) :int
   (context c-context))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

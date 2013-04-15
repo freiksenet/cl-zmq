@@ -3,7 +3,7 @@
 (cl:eval-when (:load-toplevel :execute)
   (asdf:operate 'asdf:load-op 'cffi-grovel))
 
-(asdf:defsystem zeromq
+(asdf:defsystem zeromq3
   :name "zeromq"
   :version "0.2.0"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
@@ -21,3 +21,12 @@
      (:file "meta")
      (:file "zeromq")
      (:file "zeromq-api")))))
+
+(asdf:defsystem zeromq.tests
+  :depends-on (:zeromq :fiveam)
+  :components
+  ((:module "tests"
+            :serial t
+            :components
+            ((:file "package")
+             (:file "main")))))
