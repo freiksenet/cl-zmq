@@ -31,21 +31,17 @@
   (call-with-error-check
    #'%ctx-get
    (list context
-         (or (foreign-enum-value
-              'context-options
-              option
-              :errorp nil)
-             -1))))
+         (foreign-enum-value
+               'context-options
+               option))))
 
 (defun ctx-set (context option value)
   (call-with-error-check
    #'%ctx-set
    (list context
-         (or (foreign-enum-value
-              'context-options
-              option
-              :errorp nil)
-             -1)
+         (foreign-enum-value
+          'context-options
+          option)
          value)))
 
 (defun ctx-destroy (context)
@@ -56,8 +52,17 @@
 ;; Sockets
 
 (defun socket (context type)
-  (%socket context
-           (foreign-enum-value 'socket-types type)))
+  (call-with-error-check
+   #'%socket
+   (list context
+         (foreign-enum-value 'socket-types
+                             type))
+   :type :pointer))
+
+(defun close (socket)
+  (call-with-error-check
+   #'%close
+   (list socket)))
 
 (defmacro with-socket ((socket context type) &body body)
   `(let ((,socket (socket ,context ,type)))
@@ -79,7 +84,7 @@
 
 (defun disconnect (s address)
   (with-foreign-string (addr address)
-    (call-with-error-check #'%connect (list s addr))))
+    (call-with-error-check #'%disconnect (list s addr))))
 
 (defun get-socket-option-value-type (option)
   (case option

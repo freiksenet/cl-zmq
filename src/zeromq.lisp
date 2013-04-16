@@ -68,7 +68,7 @@
   (context c-context)
   (type :int))
 
-(defcfun ("zmq_close" close) :int
+(defcfun ("zmq_close" %close) :int
   (socket c-socket))
 
 (defcfun ("zmq_getsockopt" %getsockopt) :int

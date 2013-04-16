@@ -3,7 +3,7 @@
 (cl:eval-when (:load-toplevel :execute)
   (asdf:operate 'asdf:load-op 'cffi-grovel))
 
-(asdf:defsystem zeromq3
+(asdf:defsystem zeromq
   :name "zeromq"
   :version "0.2.0"
   :author "Vitaly Mayatskikh <v.mayatskih@gmail.com>"
