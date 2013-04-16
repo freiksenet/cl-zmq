@@ -215,6 +215,7 @@
              (foreign-bitfield-value 'send-options flags)))
 
 ;; Polls
+;; (xxx)freiksenet: probably broken, don't use it yet.
 
 (defclass pollitem ()
   ((raw         :accessor pollitem-raw :initform nil)

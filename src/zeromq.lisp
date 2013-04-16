@@ -110,9 +110,9 @@
   (msg c-msg)
   (size :long))
 
-;; This currently won't work properly for the reasons defined here
+;; (xxx)freiksenet: This might not work properly. I haven't tested it myself,
+;; but this blog post suggest that it wont.
 ;; http://13-49.blogspot.fi/2010/06/why-zero-copy-is-missing-in-cl-zmq.html
-;; Don't use it unless you know what you are doing.
 (defcallback zmq-free :void ((ptr :pointer) (hint :pointer))
   (declare (ignorable hint))
   (foreign-free ptr))
@@ -126,7 +126,7 @@
 
 (defun %zmq-init-data (msg data size)
   (%%msg-init-data msg data size 'zmq-free))
-;; End of non-functional code
+;; End of potentially broken code
 
 (defcfun ("zmq_msg_close" %msg-close) :int
   (msg c-msg))
