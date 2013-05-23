@@ -212,7 +212,7 @@
 
 (defun msg-recv (s msg &rest flags)
   (%msg-recv (msg-raw msg) s
-             (foreign-bitfield-value 'send-options flags)))
+             (foreign-bitfield-value 'send-recv-options flags)))
 
 ;; Polls
 ;; (xxx)freiksenet: probably broken, don't use it yet.
