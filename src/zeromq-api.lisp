@@ -198,17 +198,17 @@
 (defun send (s data &rest flags)
   (with-foreign-string ((buf len) data)
     (%send s buf (1- len)
-           (foreign-bitfield-value 'send-options flags))))
+           (foreign-bitfield-value 'send-recv-options flags))))
 
 (defun recv (s length &rest flags)
   (with-foreign-string ((buf len) (make-string length))
     (%recv s buf (1- len)
-           (foreign-bitfield-value 'send-options flags))
+           (foreign-bitfield-value 'send-recv-options flags))
     (foreign-string-to-lisp buf)))
 
 (defun msg-send (s msg &rest flags)
   (%msg-send (msg-raw msg) s
-             (foreign-bitfield-value 'send-options flags)))
+             (foreign-bitfield-value 'send-recv-options flags)))
 
 (defun msg-recv (s msg &rest flags)
   (%msg-recv (msg-raw msg) s
