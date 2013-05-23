@@ -146,7 +146,7 @@
               (let ((len (length data)))
                 (%msg-init-size obj len)
                 (with-pointer-to-vector-data (ptr data)
-                  (memcpy (%msg-data obj) ptr len))))
+                  (%memcpy (%msg-data obj) ptr len))))
              (array (progn
                       (%msg-init-size obj (length data))
                       (let ((ptr (%msg-data obj))
