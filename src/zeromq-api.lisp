@@ -175,7 +175,7 @@
                                (make-array len :element-type '(unsigned-byte 8)))))
         (declare (type (simple-array (unsigned-byte 8)) arr))
         (with-pointer-to-vector-data (ptr arr)
-          (memcpy ptr data len))
+          (%memcpy ptr data len))
         arr))))
 
 (defun msg-close (msg)
