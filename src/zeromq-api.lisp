@@ -125,37 +125,40 @@
 
 ;; Messages
 
-(defclass msg ()
-  ((raw :accessor msg-raw :initform nil)))
+(defstruct (msg (:constructor %make-msg))
+  raw)
 
-(defmethod initialize-instance :after ((inst msg) &key size data)
-  (let ((obj (foreign-alloc 'c-msg)))
-    (tg:finalize inst (lambda ()
-                        (%msg-close obj)
-                        (foreign-free obj)))
-    (cond (size (%msg-init-size obj size))
+(defun make-msg (&key size data)
+  (let ((msg (%make-msg))
+        (raw-msg (foreign-alloc 'c-msg)))
+    (tg:finalize msg (lambda ()
+                       (%msg-close raw-msg)
+                       (foreign-free raw-msg)))
+    (cond (size (%msg-init-size raw-msg size))
           (data
            (etypecase data
              (string
               (with-foreign-string (fstr data)
                 (copy-lisp-string-octets
-                 data (lambda (sz)
-                        (%msg-init-size obj sz)
-                        (%msg-data obj)))))
+                 data
+                 (lambda (size)
+                   (%msg-init-size raw-msg size)
+                   (%msg-data raw-msg)))))
              ((simple-array (unsigned-byte 8))
               (let ((len (length data)))
-                (%msg-init-size obj len)
+                (%msg-init-size raw-msg len)
                 (with-pointer-to-vector-data (ptr data)
-                  (%memcpy (%msg-data obj) ptr len))))
+                  (%memcpy (%msg-data raw-msg) ptr len))))
              (array (progn
-                      (%msg-init-size obj (length data))
-                      (let ((ptr (%msg-data obj))
+                      (%msg-init-size raw-msg (length data))
+                      (let ((ptr (%msg-data raw-msg))
                             (i -1))
                         (map nil (lambda (x)
                                    (setf (mem-aref ptr :uchar (incf i)) x))
                              data))))))
-          (t (%msg-init obj)))
-    (setf (msg-raw inst) obj)))
+          (t (%msg-init raw-msg)))
+    (setf (msg-raw msg) raw-msg)
+    msg))
 
 (defun msg-data-as-is (msg)
   (%msg-data (msg-raw msg)))
@@ -177,12 +180,6 @@
         (with-pointer-to-vector-data (ptr arr)
           (%memcpy ptr data len))
         arr))))
-
-(defun msg-close (msg)
-  (%msg-close (msg-raw msg)))
-
-(defun msg-init-size (msg size)
-  (%msg-init-size (msg-raw msg) size))
 
 (defun msg-size (msg)
   (%msg-size (msg-raw msg)))
