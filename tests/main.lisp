@@ -32,7 +32,7 @@
     (let ((ctx (zmq:ctx-new)))
       (is (= 1 (zmq:ctx-get ctx :io-threads)))
       (is (= 1024 (zmq:ctx-get ctx :max-sockets)))
-      (signals (zmq:zmq-error
+      (signals (simple-error
                 "Invalid setting keywords should signal an error")
         (zmq:ctx-get ctx :invalid-stuff)))))
 
@@ -42,7 +42,7 @@
     (is (zerop (zmq:ctx-set ctx :io-threads 10)))
     (is (= 10 (zmq:ctx-get ctx :io-threads))
         "Setting settings should make getting return appropriately")
-    (signals (zmq:zmq-error
+    (signals (simple-error
               "Invalid setting keywords should signal an error")
       (zmq:ctx-set ctx :invalid-stuff 10))))
 
@@ -70,7 +70,7 @@
 (test socket-abnormal-creation
   "Abnormal socket creation should signal error."
   (let ((ctx (zmq:ctx-new)))
-    (signals (zmq:zmq-error
+    (signals (simple-error
               "Creating socket with wrong type should signal error")
       (zmq:socket ctx :invalid-type))
     (zmq:ctx-destroy ctx)
@@ -106,7 +106,7 @@
   (zmq:with-context (ctx)
     (zmq:with-socket (s ctx :pub)
       (is (= 0 (zmq:getsockopt s :affinity)))
-      (signals (zmq:zmq-error
+      (signals (simple-error
                 "Invalid setting keywords should signal an error.")
         (zmq:getsockopt s :invalid-stuff)))))
 
@@ -116,7 +116,7 @@
     (zmq:with-socket (s ctx :pub)
       (is (zerop (zmq:setsockopt s :affinity 10)))
       (is (= 10 (zmq:getsockopt s :affinity)))
-      (signals (zmq:zmq-error
+      (signals (simple-error
                 "Invalid setting keywords should signal an error")
         (zmq:setsockopt s :invalid-stuff 10)))))
 
@@ -188,7 +188,7 @@
    an empty message."
   (let ((src-msg (zmq:make-msg :data #(1 2 3 4)))
         (dst-msg (zmq:make-msg)))
-    (zmq:msg-copy dst-msg src-msg)
+    (zmq:msg-move dst-msg src-msg)
     (is (equalp #() (zmq:msg-data-as-array src-msg)))
     (is (= 4 (zmq:msg-size dst-msg)))
     (is (equalp #(1 2 3 4)
