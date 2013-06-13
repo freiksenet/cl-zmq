@@ -126,3 +126,70 @@
     (zmq:with-socket (s ctx :pub)
       (is (zerop (zmq:setsockopt s :identity "Foobar")))
       (is (equal "Foobar" (zmq:getsockopt s :identity))))))
+
+;; Making and working with messages
+
+(test make-msg-empty
+  "Calling make-msg without arguments yield empty message and it's really
+   empty."
+  (let ((msg (zmq:make-msg)))
+    (is (zerop (zmq:msg-size msg)))
+    (is (equalp #() (zmq:msg-data-as-array msg)))
+    (is (equal "" (zmq:msg-data-as-string msg)))))
+
+(test make-msg-string
+  "Calling make-msg with string as :data should produce message with payload
+   matching the string."
+  (let* ((empty-msg (zmq:make-msg :data ""))
+         (content "payload of message")
+         (content-vec (map 'vector #'char-code content))
+         (msg (zmq:make-msg :data content)))
+    (is (zerop (zmq:msg-size empty-msg)))
+    (is (equalp #() (zmq:msg-data-as-array empty-msg)))
+    (is (equal "" (zmq:msg-data-as-string empty-msg)))
+    (is (= (length content) (zmq:msg-size msg)))
+    (is (equal content (zmq:msg-data-as-string msg)))
+    (is (equalp content-vec (zmq:msg-data-as-array msg)))))
+
+(test make-msg-string-unicode
+  "Calling make-msg with unicode data should produce message with payload
+   encoded correctly."
+  (let ((msg (zmq:make-msg :data "ю")))
+    (is (= 2 (zmq:msg-size msg)))
+    (is (equal "ю" (zmq:msg-data-as-string msg)))))
+
+(test make-msg-array
+  "Calling make-msg with array as data should produce message with matching
+   payload."
+  (let ((msg (zmq:make-msg :data #(1 2 3 4))))
+    (is (= 4 (zmq:msg-size msg)))
+    (is (equalp #(1 2 3 4) (zmq:msg-data-as-array msg)))))
+
+(test make-msg-size
+  "Calling make-msg with size argument should produce message of appropriate
+   size."
+  (let ((msg (zmq:make-msg :size 10)))
+    (is (= 10 (zmq:msg-size msg)))))
+
+(test msg-copy
+  "Calling msg-copy should copy the payload of the source without disturbing
+   the original."
+  (let ((src-msg (zmq:make-msg :data #(1 2 3 4)))
+        (dst-msg (zmq:make-msg)))
+    (zmq:msg-copy dst-msg src-msg)
+    (is (= (zmq:msg-size src-msg) (zmq:msg-size dst-msg) 4))
+    (is (equalp (zmq:msg-data-as-array src-msg)
+                (zmq:msg-data-as-array dst-msg)))
+    (is (equalp #(1 2 3 4)
+                (zmq:msg-data-as-array src-msg)))))
+
+(test msg-move
+  "Calling msg-move should copy the payload of the source while making original
+   an empty message."
+  (let ((src-msg (zmq:make-msg :data #(1 2 3 4)))
+        (dst-msg (zmq:make-msg)))
+    (zmq:msg-copy dst-msg src-msg)
+    (is (equalp #() (zmq:msg-data-as-array src-msg)))
+    (is (= 4 (zmq:msg-size dst-msg)))
+    (is (equalp #(1 2 3 4)
+                (zmq:msg-data-as-array dst-msg)))))

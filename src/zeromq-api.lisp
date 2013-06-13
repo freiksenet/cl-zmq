@@ -160,9 +160,6 @@
     (setf (msg-raw msg) raw-msg)
     msg))
 
-(defun msg-data-as-is (msg)
-  (%msg-data (msg-raw msg)))
-
 (defun msg-data-as-string (msg)
   (let ((data (%msg-data (msg-raw msg)))
         (size (%msg-size (msg-raw msg))))
@@ -180,6 +177,12 @@
         (with-pointer-to-vector-data (ptr arr)
           (%memcpy ptr data len))
         arr))))
+
+;;; (xxx)freiksenet: doing zmq operations on closed message sends SBCL to ldb.
+(defun msg-close (msg)
+  (tg:cancel-finalization msg)
+  (%msg-close (msg-raw msg))
+  (foreign-free (msg-raw msg)))
 
 (defun msg-size (msg)
   (%msg-size (msg-raw msg)))

@@ -70,11 +70,11 @@
    #:getsockopt
    #:setsockopt
 
-   #:msg-data-as-is
+   #:make-msg
+   #:msg-raw
    #:msg-data-as-array
    #:msg-data-as-string
    #:msg-close
-   #:msg-init-size
    #:msg-size
    #:msg-move
    #:msg-copy
