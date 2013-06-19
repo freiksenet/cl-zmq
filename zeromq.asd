@@ -23,7 +23,7 @@
      (:file "zeromq-api")))))
 
 (asdf:defsystem zeromq.tests
-  :depends-on (:zeromq :fiveam)
+  :depends-on (:zeromq :fiveam :bordeaux-threads)
   :components
   ((:module "tests"
             :serial t

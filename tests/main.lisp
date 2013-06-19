@@ -9,6 +9,21 @@
 
 (defparameter *test-endpoint* "tcp://127.0.0.1:31723")
 
+(defmacro with-test-reciever (socket &body body)
+  (let ((result-var (gensym "result"))
+        (msg-var (gensym "msg"))
+        (thread-var (gensym "thread")))
+    `(let* ((,result-var)
+            (,thread-var
+              (bordeaux-threads:make-thread
+               (lambda ()
+                 (let ((,msg-var (zmq:make-msg)))
+                   (zmq:msg-recv ,socket ,msg-var)
+                   (setf ,result-var ,msg-var))))))
+       ,@body
+       (bordeaux-threads:join-thread ,thread-var)
+       ,result-var)))
+
 ;; Version
 
 (test version
@@ -193,3 +208,22 @@
     (is (= 4 (zmq:msg-size dst-msg)))
     (is (equalp #(1 2 3 4)
                 (zmq:msg-data-as-array dst-msg)))))
+
+;; Sending and recieving the messages
+
+(test test-send-recv-msg
+  "Messages should be sent and recieved correctly with msg-send and msg-recv."
+  (let ((msg (zmq:make-msg :data #(1 2 3 4))))
+    (zmq:with-context (ctx)
+      (zmq:with-socket (sender ctx :push)
+        (zmq:with-socket (reciever ctx :pull)
+          (zmq:bind sender *test-endpoint*)
+          (zmq:connect reciever *test-endpoint*)
+          (let ((result-msg
+                   (with-test-reciever reciever
+                    (zmq:msg-send sender msg))))
+            (is (equalp #(1 2 3 4)
+                        (zmq:msg-data-as-array result-msg)))
+            (is (equalp #()
+                        (zmq:msg-data-as-array msg))
+                "Sent message should be emptied.")))))))
