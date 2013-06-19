@@ -215,47 +215,46 @@
              (foreign-bitfield-value 'send-recv-options flags)))
 
 ;; Polls
-;; (xxx)freiksenet: probably broken, don't use it yet.
 
-(defclass pollitem ()
-  ((raw         :accessor pollitem-raw :initform nil)
-   (socket      :accessor pollitem-socket :initform (cffi:null-pointer) :initarg :socket)
-   (fd          :accessor pollitem-fd :initform -1 :initarg :fd)
-   (events      :accessor pollitem-events :initform 0 :initarg :events)
-   (revents     :accessor pollitem-revents :initform 0)))
+(defun poll (sockets &optional timeout)
+  (let* ((length (length sockets))
+         (pollitems (foreign-alloc 'c-pollitem :count length)))
+    (dotimes (i length)
+      (apply #'fill-pollitem
+             (mem-aref pollitems 'c-pollitem i)
+             (nth i sockets)))
+    (let* ((result (call-with-error-check
+                    #'%poll
+                    (list pollitems
+                          length
+                          (or timeout -1))))
+           (events (extract-pollitems-events pollitems length)))
+      (foreign-free pollitems)
+      (values result events))))
 
-(defmethod initialize-instance :after ((inst pollitem) &key)
-  (let ((obj (foreign-alloc 'pollitem)))
-    (setf (pollitem-raw inst) obj)
-    (tg:finalize inst (lambda () (foreign-free obj)))))
+(defun fill-pollitem (pollitem s &rest flags)
+  (if (numberp s)
+      (setf (foreign-slot-value pollitem 'c-pollitem 'fd)
+            s)
+      (setf (foreign-slot-value pollitem 'c-pollitem 'socket)
+            s))
+  (setf (foreign-slot-value pollitem 'c-pollitem 'events)
+        (foreign-bitfield-value 'event-types
+                                flags))
+  pollitem)
 
-(defun poll (items &optional (timeout -1))
-  (let ((len (length items)))
-    (with-foreign-object (%items 'c-pollitem len)
-      (dotimes (i len)
-        (let ((item (nth i items))
-              (%item (mem-aref %items 'c-pollitem i)))
-          (with-foreign-slots ((socket fd events revents) %item pollitem)
-            (setf socket (pollitem-socket item)
-                  fd (pollitem-fd item)
-                  events (pollitem-events item)))))
-      (let ((ret (%poll %items len timeout)))
-        (cond
-          ((zerop ret) nil)
-          ((plusp ret)
-           (loop for i below len
-              for revent = (foreign-slot-value (mem-aref %items 'c-pollitem i)
-                                               'c-pollitem
-                                               'revents)
-              collect (setf (pollitem-revents (nth i items)) revent)))
-          (t (error (convert-from-foreign (%strerror (errno)) :string))))))))
+(defun extract-pollitems-events (pollitems length)
+  (let ((result ()))
+    (dotimes (i length)
+      (push (extract-pollitem-events (mem-aref pollitems 'c-pollitem i))
+            result))
+    result))
 
-(defmacro with-polls (list &body body)
-  `(let ,(loop for (name . polls) in list
-            collect `(,name
-                      (list
-                       ,@(loop for (socket . events) in polls
-                            collect `(make-instance 'pollitem
-                                                    :socket ,socket
-                                                    :events ,events)))))
-     ,@body))
+(defun extract-pollitem-events (pollitem)
+  (let ((socket (foreign-slot-value pollitem 'c-pollitem 'socket))
+        (fd (foreign-slot-value pollitem 'c-pollitem 'fd))
+        (revents (foreign-slot-value pollitem 'c-pollitem 'revents)))
+    (cons (if (> fd 0)
+              fd
+              socket)
+          (foreign-bitfield-symbols 'event-types revents))))

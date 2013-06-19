@@ -3,7 +3,7 @@
 (defpackage #:zeromq
   (:nicknames :zmq)
   (:use :cl :cffi)
-  (:shadow #:close #:identity #:push)
+  (:shadow #:close #:identity)
   (:export
    ;; constants
    #:affinity
