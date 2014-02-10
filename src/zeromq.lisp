@@ -125,7 +125,7 @@
   (hint :pointer))
 
 (defun %zmq-init-data (msg data size)
-  (%%msg-init-data msg data size 'zmq-free))
+  (%%msg-init-data msg data size 'zmq-free nil))
 ;; End of potentially broken code
 
 (defcfun ("zmq_msg_close" %msg-close) :int
