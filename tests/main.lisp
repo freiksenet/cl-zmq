@@ -44,9 +44,11 @@
 (test ctx-get
   "Context settings should be retrievable."
   (zmq:with-context (ctx)
-    (let ((ctx (zmq:ctx-new)))
-      (is (= 1 (zmq:ctx-get ctx :io-threads)))
-      (is (= 1024 (zmq:ctx-get ctx :max-sockets)))
+    (zmq:with-context (ctx2)
+      (is (= (zmq:ctx-get ctx :io-threads)
+             (zmq:ctx-get ctx2 :io-threads)))
+      (is (= (zmq:ctx-get ctx :max-sockets)
+             (zmq:ctx-get ctx2 :max-sockets)))
       (signals (simple-error
                 "Invalid setting keywords should signal an error")
         (zmq:ctx-get ctx :invalid-stuff)))))
